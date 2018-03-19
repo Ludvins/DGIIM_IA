@@ -1,0 +1,16 @@
+Fresa:Si
+Manzana:Si
+Naranja:Si
+Kiwi:No
+Mandarina:No
+Pina:Si
+Mango:Si
+Melocoton:Si
+Higo:Si
+Ciruela:Si
+Pera:Si
+Platano:Si
+Coco:Si
+Aguacate:Si
+Nuez:Si
+Cereza:No

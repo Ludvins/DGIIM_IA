@@ -1,0 +1,30 @@
+0,^ [SUPE+ APR+] ^ PRACTICA(S) ^,*,*,La nota de las practicas sera la media de cuatro pruebas (90%) y la participacion en clase (10%). Para superarla sera necesario sacar un 5.,agente_conversacional.aiml
+0,^ CONVOCATORIA ORDINARIA ^,*,*,Se hara la media entre la nota de teoria y la nota de practicas#Comma la parte teorica consta de 2 pruebas escritas y las practicas de 3 practicas y un examen de problemas.,agente_conversacional.aiml
+0,^ CONVOCATORIA EXTRAORDINARIA ^,*,*,En la convocatoria extraordinaria hay un unico examen con partes tanto teoricas como practicas.,agente_conversacional.aiml
+0,^ [IR ASISTIR VOY] ^ CLASE ^,*,*,La asistencia a teoria no es obligatoria#Comma respecto a las practicas es obligatorio asistir a almenos unna sesion dentor de los limites de cada entrega y se defienda ante el profesor.,agente_conversacional.aiml
+0,^ MIN+ ^ APROBAR ^,*,*,La nota minima para aprobar es de un 5 de media entre la teoria y las practicas#Comma necesitandose un 3 como mínimo en cada parte para hacer media#Comma en caso de no cumplirse la nota sera el minimo de las dos notas.,agente_conversacional.aiml
+0,^ ([IR ASISTIR]) ^ PRACTICAS ^ OBLI+ ^,*,*,Es obligatorio asistir a la defensa de cada una de las practicas#Comma ademas#Comma se tendra en cuenta la asistencia en la nota de participacion.,agente_conversacional.aiml
+0,^ OBLI+ ([IR ASISTIR]) ^ PRACTICAS ^,*,*,<srai> practicas obligatorias </srai>,agente_conversacional.aiml
+0,[CUANTO QUE] ^ VALE CADA PRACTICA ^ NOTA (FINAL) ^,*,*,Cada practica vale 1.125 sobre la nota final.,agente_conversacional.aiml
+0,CUANTO ^ PARTICIPACION ^,*,*,La participacion vale 0.5 sobre la nota final,agente_conversacional.aiml
+0,^ PUNTOS ^ PARTICIPACION ^,*,*,Parte de la nota de participacion sera la asistencia a clase#Comma ademas de ser activo en estas.,agente_conversacional.aiml
+0,^ INDIVIDUALES ^,*,*,La practica es individual y no esta permitido ningun tipo de trabajo en grupo en ella.,agente_conversacional.aiml
+0,^ [TRABAJOS PRACTICAS] ^ GRUPO,*,*,La practica es individual#Comma luego no se puede trabajar en grupo.,agente_conversacional.aiml
+0,^ ENTREGAR ^ [EJERCICIOS PROBLEMAS] ^,*,*,No es necesario entregar los ejercicios de las relaciones de problemas,agente_conversacional.aiml
+0,^ RECUPERAR ^,*,*,No se da informacion sobre ello#Comma se asume que no.,agente_conversacional.aiml
+0,^ COPIO ^ (ESTUDIANTE) ^,*,*,Se calificara con un suspenso en las practicas a todos los involucrados.,agente_conversacional.aiml
+0,^ COP+ ^,*,*,Se te calificara con un suspenso en las practicas.,agente_conversacional.aiml
+0,^ SUSPEND+ ^ ORDINARIA ^,*,*,Debera presentarse contoda la asignatura a la conv. extraordinaria.,agente_conversacional.aiml
+0,CUANTO ^ PRACTICA(S) ^ TEORIA,*,*,Cada una supone el 50% de la nota final.,agente_conversacional.aiml
+0,^ TUTORIA(S) ^,*,*,Lunes: 3:30 - 5.50#Comma 7:30 - 8:30. Martes: 6:30 - 7:30. Viernes: 5:30 - 7:30,agente_conversacional.aiml
+0,# ^ [APROBAR SUPERAR] ^ [NO SIN] ^ PRACTICA(S),*,*,Para aprobar las practicas solo es necesario sacar un 5 de media.,agente_conversacional.aiml
+0,^ [NOTA PUNTUACION] ^ MEDIA ^,*,*,Un 3,agente_conversacional.aiml
+0,^ [NOTA PUNTUACION] ^ PRACTICA ^ [HACER DEFENDER] ^ 3 ^ [NO SIN] ^,*,*,un 6,agente_conversacional.aiml
+0,^ ENTREGAR ^ 1 ^ SIN ^ 0 ^,*,*,no,agente_conversacional.aiml
+0,^ NO ^ [ASISTIR IR] ^ DEFENSA ^,*,*,Informar al profesor en caso de ser por causa justificada.,agente_conversacional.aiml
+0,^ [PRUEBAS EXAMENES] ^ TEO+ ^,*,*,dos,agente_conversacional.aiml
+0,^ PRIME+ ^ [PRUEBA EXAMEN] ^ TEO+,*,*,Un 25% de la nota final,agente_conversacional.aiml
+0,^ [EXAMEN PRUEBA] ^ EJERCICIOS,*,*,En realizar ejercicios como los propuestos en la relacion de problemas,agente_conversacional.aiml
+0,^ NO ^ [SE SEGURO] ^ [SUPERAR APROBAR] ^ 3 ^,*,*,Realizar el nivel 2 con seguridad.,agente_conversacional.aiml
+0,^ [C++, JAVA, RUBY, C++ JAVA RUBY] ^,*,*,no#Comma el objetivo de las practicas es utilizar aiml,agente_conversacional.aiml
+0,^ AGENTE(S) ^ DEFENSA ^,*,*,si te quieres arriesgar....,agente_conversacional.aiml

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+	<!-- File: Nivel1.aiml -->
+  <!-- Autor: Luis Ortega Andrés -->
+
+  <!-- ····················································· -->
+  <!-- ············ Comienzo y eleccion de juego ··········· -->
+
+  <category>
+    <pattern> Hola </pattern>
+    <template>
+      A quien le toca adivinar la fruta?
+    </template>
+  </category>
+
+  <!-- ·················· Juego nivel 3 ···················· -->
+  <category>
+    <pattern> a ti </pattern>
+    <template> <srai> adivina la fruta </srai> </template>
+  </category>
+
+
+  <!-- ·················· Juego nivel 1 ···················· -->
+  <category>
+    <pattern> a mi </pattern>
+    <template>
+      <think>
+      <set name = "list"> Fresa Manzana Naranja Kiwi Mandarina Pina Mango Melocoton Higo Ciruela Pera Platano Coco Aguacate Nuez Cereza </set>
+      <set var = "cantidad"> <srai> COUNT <get name = "list"/> </srai> </set>
+      <set var = "pos" > <srai> RANDOM <get var = "cantidad"/> </srai> </set>
+      <set name = "fruta" > <srai> SELECTITEM <get var = "pos"/> IN <get name = "list"/> </srai> </set>
+      </think>
+      Las frutas posibles son: <get name = "list"/>
+      La sintaxis correcta de las preguntas es: es rojo, tiene va, el platano es amarillo, la manzana es roja, la fruta es la manzana...
+    </template>
+  </category>
+
+  <!-- ····················································· -->
+  <!-- ·················· Pregunta final ··················· -->
+
+  <category>
+    <pattern> Es [la el] * </pattern>
+    <template>
+      <condition name="fruta">
+        <li><value><star/></value>Has acertado la fruta.</li>
+        <li>Te has equivocado. </li>
+      </condition>
+    </template>
+  </category>
+
+
+  <!-- ······················································ -->
+  <!-- ········ Preguntas sobre una fruta especifica ········ -->
+
+  <category>
+    <pattern> [el la] * es <set>color</set> </pattern>
+    <template>
+      <think>
+      <set var = "res"> <map><name>color</name><star/> </map> </set>
+      <set var = "esta"> <srai> Finditem <star index = "2"/> in <get var = "res"/>  </srai> </set>
+      </think>
+      <condition var = "esta">
+        <li value ="0">  No </li>
+        <li> Si </li>
+      </condition>
+    </template>
+  </category>
+
+  <category>
+    <pattern> [el la] * es <set>size</set> </pattern>
+    <template>
+      <think>
+      <set var = "res"> <map><name>size</name><star/> </map> </set>
+      <set var = "esta"> <srai> Finditem <star index = "2"/> in <get var = "res"/>  </srai> </set>
+      </think>
+      <condition var = "esta">
+        <li value ="0">  No </li>
+        <li> Si </li>
+      </condition>
+    </template>
+  </category>
+
+  <category>
+    <pattern> [el la] * es <set>sabor</set> </pattern>
+    <template>
+      <think>
+      <set var = "res"> <value> <map><name>sabor</name><star/> </map> </value> </set>
+      <set var = "esta"> <srai> Finditem <star index = "2"/> in <get var = "res"/>  </srai> </set>
+      </think>
+      <condition var = "esta">
+        <li value ="0">  No </li>
+        <li> Si </li>
+      </condition>
+    </template>
+  </category>
+
+  <category>
+    <pattern> [el la] * tiene * </pattern>
+    <template>
+      <set var = "res"> <value> <map><name> <star index="2"/> </name> <star/> </map> </value> </set>
+    </template>>
+  </category>
+
+
+
+  <!-- ······················································ -->
+  <!-- ········ Preguntas sobre la fruta a adivinar ········· -->
+
+
+  <category>
+    <pattern> Es <set>color</set> </pattern>
+    <template> <srai> categoria color tipo <star/> </srai> </template>
+  </category>
+
+  <category>
+    <pattern> Es <set>size</set> </pattern>
+    <template> <srai> categoria size tipo <star/> </srai> </template>
+  </category>
+
+  <category>
+    <pattern> Es <set>sabor</set> </pattern>
+    <template> <srai> categoria sabor tipo <star/> </srai> </template>
+  </category>
+
+  <category>
+    <pattern> Tiene * </pattern>
+    <template> <map><name><star/></name><get name = "fruta"/></map> </template>
+  </category>
+
+  <category>
+    <pattern> categoria * tipo * </pattern>
+    <template>
+      <think>
+      <set var = "answer"> <map><name><star/></name><get name = "fruta"/></map> </set>
+      <set var = "esta"> <srai> finditem <star index="2"/> in <get var = "answer"/> </srai> </set>
+      </think>
+      <condition var = "esta">
+        <li value = "0"> No </li>
+        <li> Si </li>
+      </condition>
+    </template>
+  </category>
+
+</aiml>

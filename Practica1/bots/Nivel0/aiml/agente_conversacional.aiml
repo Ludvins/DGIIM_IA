@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+	<!-- File: agente_conversacional.aiml -->
+
+  <category>
+    <pattern>^ [supe+ apr+] ^ practica(s) ^</pattern>
+    <template> La nota de las practicas sera la media de cuatro pruebas (90%) y la participacion en clase (10%). Para superarla sera necesario sacar un 5. </template>
+  </category>
+
+  <category>
+    <pattern> ^ convocatoria ordinaria ^ </pattern>
+    <template> Se hara la media entre la nota de teoria y la nota de practicas, la parte teorica consta de 2 pruebas escritas y las practicas de 3 practicas y un examen de problemas. </template>
+  </category>
+
+  <category>
+    <pattern> ^ convocatoria extraordinaria ^ </pattern>
+    <template> En la convocatoria extraordinaria hay un unico examen con partes tanto teoricas como practicas. </template>
+  </category>
+
+  <category>
+    <pattern> ^ [ir asistir voy] ^ clase ^ </pattern>
+    <template> La asistencia a teoria no es obligatoria, respecto a las practicas es obligatorio asistir a almenos unna sesion dentor de los limites de cada entrega y se defienda ante el profesor. </template>
+  </category>
+
+	<category>
+		<pattern> ^ min+ ^ aprobar ^</pattern>
+    <template> La nota minima para aprobar es de un 5 de media entre la teoria y las practicas, necesitandose un 3 como mínimo en cada parte para hacer media, en caso de no cumplirse la nota sera el minimo de las dos notas. </template>
+  </category>
+
+
+  <category>
+    <pattern> ^ ([ir asistir]) ^ practicas ^ obli+ ^ </pattern>
+    <template> Es obligatorio asistir a la defensa de cada una de las practicas, ademas, se tendra en cuenta la asistencia en la nota de participacion. </template>
+  </category>
+  <category>
+    <pattern> ^ obli+ ([ir asistir]) ^ practicas ^ </pattern>
+    <template><srai> practicas obligatorias </srai></template>
+  </category>
+
+
+  <category>
+    <pattern> [cuanto que] ^ vale cada practica ^ nota (final) ^ </pattern>
+    <template> Cada practica vale 1.125 sobre la nota final. </template>
+  </category>
+
+  <category>
+    <pattern> cuanto ^ participacion ^ </pattern>
+    <template> La participacion vale 0.5 sobre la nota final </template>
+  </category>
+
+  <category>
+    <pattern> ^ puntos ^ participacion ^ </pattern>
+    <template> Parte de la nota de participacion sera la asistencia a clase, ademas de ser activo en estas. </template>
+  </category>
+
+  <category>
+    <pattern> ^ individuales ^ </pattern>
+    <template> La practica es individual y no esta permitido ningun tipo de trabajo en grupo en ella. </template>
+  </category>
+
+  <category>
+    <pattern>  ^ [trabajos practicas] ^ grupo </pattern>
+    <template> La practica es individual, luego no se puede trabajar en grupo. </template>
+  </category>
+
+  <category>
+    <pattern> ^ entregar ^ [ejercicios problemas] ^ </pattern>
+    <template> No es necesario entregar los ejercicios de las relaciones de problemas </template>
+  </category>
+
+  <category>
+    <pattern> ^ recuperar ^ </pattern>
+    <template> No se da informacion sobre ello, se asume que no. </template>
+  </category>
+
+  <category>
+    <pattern> ^ copio ^ (estudiante) ^ </pattern>
+    <template> Se calificara con un suspenso en las practicas a todos los involucrados. </template>
+  </category>
+
+  <category>
+    <pattern> ^ cop+ ^ </pattern>
+    <template> Se te calificara con un suspenso en las practicas. </template>
+  </category>
+
+  <category>
+    <pattern> ^ suspend+ ^ ordinaria ^ </pattern>
+    <template> Debera presentarse contoda la asignatura a la conv. extraordinaria. </template>
+  </category>
+
+  <category>
+    <pattern> cuanto ^ practica(s) ^ teoria </pattern>
+    <template> Cada una supone el 50% de la nota final. </template>
+  </category>
+
+  <category>
+    <pattern> ^ tutoria(s) ^ </pattern>
+    <template> Lunes: 3:30 - 5.50, 7:30 - 8:30. Martes: 6:30 - 7:30. Viernes: 5:30 - 7:30</template>
+  </category>
+
+  <category>
+    <pattern># ^ [aprobar superar] ^ [no sin] ^ practica(s) </pattern>
+    <template> Para aprobar las practicas solo es necesario sacar un 5 de media. </template>
+  </category>
+
+  <category>
+    <pattern> ^ [nota puntuacion] ^ media ^ </pattern>
+    <template> Un 3 </template>
+  </category>
+
+  <category>
+    <pattern> ^ [nota puntuacion] ^ practica ^ [hacer defender] ^ 3 ^ [no sin] ^ </pattern>
+    <template> un 6 </template>
+  </category>
+
+  <category>
+    <pattern> ^ entregar ^ 1 ^ sin ^ 0 ^ </pattern>
+    <template> no </template>
+  </category>
+
+  <category>
+    <pattern> ^ no ^ [asistir ir] ^ defensa ^ </pattern>
+    <template> Informar al profesor en caso de ser por causa justificada. </template>
+  </category>
+
+  <category>
+    <pattern> ^ [pruebas examenes] ^ teo+ ^ </pattern>
+    <template> dos </template>
+  </category>
+
+  <category>
+    <pattern> ^ prime+ ^ [prueba examen] ^ teo+ </pattern>
+    <template> Un 25% de la nota final </template>
+  </category>
+
+  <category>
+    <pattern> ^ [examen prueba] ^ ejercicios </pattern>
+    <template> En realizar ejercicios como los propuestos en la relacion de problemas </template>
+  </category>
+
+  <category>
+    <pattern> ^ no ^ [se seguro] ^ [superar aprobar] ^ 3 ^ </pattern>
+    <template> Realizar el nivel 2 con seguridad. </template>
+  </category>
+
+  <category>
+    <pattern> ^ [c++, java, ruby, c++ java ruby] ^ </pattern>
+    <template> no, el objetivo de las practicas es utilizar aiml </template>
+  </category>
+
+  <category>
+    <pattern> ^ agente(s) ^ defensa ^ </pattern>
+    <template> si te quieres arriesgar....  </template>
+  </category>
+
+ 
+
+
+</aiml>

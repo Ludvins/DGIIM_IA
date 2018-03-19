@@ -1,7 +1,0 @@
-0,^ [SUPERAR SUPERO SUPERAN APROBAR APRUEBO APRUEBA APRUEBAN] ^ PRACTICA(S) ^,*,*,Superar parte practicas,utilidades.aiml
-0,^ CONVOCATORIA ORDINARIA ^,*,*,Convocatoria ordinaria,utilidades.aiml
-0,^ CONVOCATORIA EXTRAORDINARIA ^,*,*,No/si hay examen de practicas#Comma la convoc extr. es....,utilidades.aiml
-0,^ [IR ASISTIR VOY] ^ CLASE ^,*,*,asistir a clase,utilidades.aiml
-0,^ [MINIMO MINIMA MINIMOS] ^ APROBAR ^,*,*,Tengo que buscar esto jaja salu2 50%?,utilidades.aiml
-0,^ ([IR ASISTIR]) ^ PRACTICAS ^ [OBLIGATORIO OBLIGATORIAS] ^,*,*,Practicas,utilidades.aiml
-0,^ [OBLIGATORIO OBLIGATORIAS] ([IR ASISTIR]) ^ PRACTICAS ^,*,*,<srai> practicas obligatorias </srai>,utilidades.aiml

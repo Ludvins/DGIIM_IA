@@ -1,0 +1,16 @@
+Fresa:Roja Pequena Semiacida vb vc
+Manzana:Amarilla Roja verde mediana semiacida vb vc
+Naranja:naranja mediana acida vb vc
+kiwi:verde amarilla pequena acida vc
+mandarina:naranja pequena acida va
+pina:amarilla verde grande acida vb vc
+mango:verde grande semiacida va vb vc
+melocoton: amarilla naranja mediana semiacida va vb
+higo:verde morada pequena dulce vb vc
+ciruela:amarilla morada pequena dulce va vb vc
+pera:verde amarilla mediana dulce vb vc 
+platano:amarilla mediana dulce vb vc
+coco:marron grande neutra vb vc
+aguacate:verde mediana neutra vb vc
+nuez:marron pequena neutra vb
+cereza:roja pequena semiacida va vc
