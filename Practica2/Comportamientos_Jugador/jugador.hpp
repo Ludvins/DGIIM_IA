@@ -13,15 +13,6 @@ struct estado {
   int orientacion;
 };
 
-struct node {
-  int i;
-  int j;
-  int b;
-  node* padre;
-  node* next;
-  node* hijo;
-};
-
 class ComportamientoJugador : public Comportamiento {
  public:
     ComportamientoJugador(unsigned int size) : Comportamiento(size) {
@@ -58,9 +49,8 @@ private:
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
   bool isPath(unsigned char c);
-  node* create(node* n, int i, int j);
   void addSurroundings(node* n);
-  int nodeDistance(const estado &n1, const estado &n2);
+  int estimateDistance(const estado &n1, const estado &n2);
 };
 
 #endif

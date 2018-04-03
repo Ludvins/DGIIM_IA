@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <cmath>
+#include <map>
+#include <limits.h>
+#include <algorithm>
+#include <set>
 
 void print(node* n){
   if(n ==nullptr) cout << "Es nulo\n";
@@ -31,13 +35,67 @@ void ComportamientoJugador::PintaPlan(list<Action> plan) {
 	cout << endl;
 }
 
-int ComportamientoJugador::nodeDistance(const estado &n1, const estado &n2){
+int ComportamientoJugador::estimateDistance(const estado &n1, const estado &n2){
   return ( (abs(n2.fila - n1.fila)) + (abs(n2.columna - n1.columna)) );
 }
 
+
+struct classcomp {
+  bool operator() (const pair<estado,int>& lhs, const pair<estado,int>& rhs) const
+  {return lhs.second < rhs.second;}
+};
+
 bool ComportamientoJugador::pathFinding(const estado &origen, const estado &destino, list<Action> &plan) {
 
-  cout << 1;
+  set <pair<estado,int>, classcomp> closedSet;
+  set <pair<estado,int>, classcomp> openSet;
+
+  openSet.insert( pair <estado, int> (origen, nodeDistance(origen, destino)) );
+
+  map<estado,int> gScore;
+  map<estado,int> fScore;
+  map <estado,estado> cameFrom;
+  gScore.insert(std::pair <estado,int> (origen, 0));
+
+  fScore.insert( std::pair <estado,int> (origen, nodeDistance(origen, destino)));
+ 
+
+  while (!openSet.empty()){
+
+    estado current = openSet.back();
+
+    if(current.fila == destino.fila && current.columna == destino.columna) return reconstructPath(cameFrom, current);
+
+    closedSet.push_back(current);
+
+    for(int i = -1; i < 3; i++){
+
+      estado neighbor {current.fila + (i%2), current.columna + ((i-1)%2), 0};
+
+      if (find(closedSet.begin(), closedSet.end(), neighbor) != closedSet.end()) //In closed set
+        continue;
+
+      if (find(openSet.begin(), openSet.end(), neighbor) == openSet.end()) // Not in openSet
+        openSet.push_back(neighbor);
+
+      gScore.insert( std::pair <estado, int> (neighbor, INT_MAX));
+
+      int tentative_gScore = gScore[current] + nodeDistance(neighbor, destino);
+      if (tentative_gScore >= gScore[neighbor]) continue;
+
+      cameFrom.insert( std::pair<estado,estado> (neighbor, current));
+      gScore[neighbor] = tentative_gScore;
+      fScore[neighbor] = gScore[neighbor] + nodeDistance(neighbor, destino);
+~
+    }
+
+
+
+
+
+
+
+  }
 
 }
 
