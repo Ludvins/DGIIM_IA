@@ -15,6 +15,10 @@ list
 -
 iostream
 -
+map
+-
+unistd.h
+-
 
 /home/ludvins/Git/IA/Practica2/Comportamientos_Jugador/aldeano.cpp
 ../Comportamientos_Jugador/aldeano.hpp
@@ -40,6 +44,16 @@ comportamientos/comportamiento.hpp
 iostream
 -
 cmath
+-
+map
+-
+limits.h
+-
+algorithm
+-
+set
+-
+memory
 -
 
 /home/ludvins/Git/IA/Practica2/include/motorlib/util.h

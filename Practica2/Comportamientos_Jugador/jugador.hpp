@@ -6,11 +6,17 @@
 #include <queue>
 #include <list>
 #include <iostream>
+#include <map>
+#include <unistd.h>
 
 struct estado {
   int fila;
   int columna;
   int orientacion;
+};
+
+struct estadocomp  {
+  bool operator() (const estado& lhs, const estado& rhs) const;
 };
 
 class ComportamientoJugador : public Comportamiento {
@@ -49,8 +55,8 @@ private:
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
   bool isPath(unsigned char c);
-  void addSurroundings(node* n);
-  int estimateDistance(const estado &n1, const estado &n2);
+  bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
+
 };
 
 #endif

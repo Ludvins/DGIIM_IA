@@ -29,6 +29,10 @@ list
 -
 iostream
 -
+map
+-
+unistd.h
+-
 
 include/comportamientolib.hpp
 comportamientos/comportamiento.hpp
