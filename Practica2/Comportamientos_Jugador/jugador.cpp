@@ -9,7 +9,7 @@
 #include <set>
 #include <memory>
 
-int debug = false;
+int debug = true;
 
 void ComportamientoJugador::PintaPlan(list<Action> plan) {
 	auto it = plan.begin();
@@ -37,47 +37,9 @@ int estimateDistance(const estado &n1, const estado &n2){
 
   int coldif = abs(n2.columna - n1.columna);
   int fildif = abs(n2.fila - n1.fila);
-
-  int ori = 2;
-
-  switch(n1.orientacion){
-  case 0:
-    if (n1.columna == n2.columna){
-      if (n2.fila < n1.fila) ori = 0;
-      else ori = 2;
-    }
-    else if (n2.fila > n1.fila) ori = 2;
-    else ori = 1;
-    break;
-  case 1:
-    if (n1.fila == n2.fila){
-      if (n2.columna > n1.columna) ori = 0;
-      else ori = 2;
-    }
-    else if (n2.columna < n1.columna) ori = 2;
-    else ori = 1;
-    break;
-  case 2:
-    if (n1.columna == n2.columna){
-      if (n2.fila > n1.fila) ori = 0;
-      else ori = 2;
-    }
-    else if (n2.fila < n1.fila) ori = 2;
-    else ori = 1;
-    break;
-  case 3:
-    if (n1.fila == n2.fila){
-      if (n2.columna < n1.columna) ori = 0;
-      else ori = 2;
-    }
-    else if (n2.columna > n1.columna) ori = 2;
-    else ori = 1;
-    break;
-  }
-
   int md = coldif + fildif ;
 
-  return md + ori;
+  return md;
 }
 
 class comp : public std::binary_function<estado, estado, bool>{
@@ -122,7 +84,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
   while (!openSet.empty()){
     estado current = *(openSet.begin());
-    //ºif(debug) usleep(10000);
+    if(debug) usleep(100000);
     if(debug) cout << "[PathFinding]: Iteracion bucle A* con fila " << current.fila << ", columna " << current.columna << " y orientacion " << current.orientacion << " y fScore " << fScore[current] << endl;
 
     if(current.fila == destino.fila && current.columna == destino.columna) return reconstructPath(cameFrom, current);
@@ -145,7 +107,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
             if (debug) cout << "[PathFinding; Lambda]: Vecino insertado en Lista de nodos pendientes" << endl;
         }
 
-        gScore[neighbor] = INT_MAX;
+        gScore.insert(make_pair(neighbor, INT_MAX));
 
         if (debug) cout << "[PathFinding; Lambda]: Inicializado valor de gScore a inf." << endl;
 
@@ -160,11 +122,12 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
           cameFrom.insert( std::pair<estado,estado> (neighbor, current));
           if (debug) cout << "[PathFinding; Lambda]: Insertado nuevo camino en cameFrom." << endl;
 
-          gScore[neighbor] = tentative_gScore;
+          gScore.erase(neighbor);
+          gScore.insert(make_pair(neighbor,tentative_gScore));
           if (debug) cout << "[PathFinding; Lambda]: Actualizado valor en gScore: " << gScore[neighbor] << endl;
 
           openSet.erase(neighbor);
-
+          fScore.erase(neighbor);
           fScore[neighbor] = gScore[neighbor] + estimateDistance(neighbor, destino); //same
           if (debug) cout << "[PathFinding; Lambda]: Actualizado valor en fScore: " << fScore[neighbor] << endl;
 

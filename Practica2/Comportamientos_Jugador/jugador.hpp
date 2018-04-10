@@ -13,6 +13,11 @@ struct estado {
   int fila;
   int columna;
   int orientacion;
+
+
+  bool operator==(estado b){
+    return fila == b.fila && columna == b.columna;
+  }
 };
 
 struct estadocomp  {
