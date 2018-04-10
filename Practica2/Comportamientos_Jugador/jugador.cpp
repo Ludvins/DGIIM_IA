@@ -9,7 +9,7 @@
 #include <set>
 #include <memory>
 
-int debug = true;
+int debug = false;
 
 void ComportamientoJugador::PintaPlan(list<Action> plan) {
 	auto it = plan.begin();
@@ -35,11 +35,52 @@ int estimateDistance(const estado &n1, const estado &n2){
 
   if ( n1.fila == n2.fila && n1.columna == n2.columna) return 0;
 
+
+
   int coldif = abs(n2.columna - n1.columna);
   int fildif = abs(n2.fila - n1.fila);
+
+  int ori = 2;
+
+  switch(n1.orientacion){
+  case 0:
+    if (n1.columna == n2.columna){
+      if (n2.fila < n1.fila) ori = 0;
+      else ori = 2;
+    }
+    else if (n2.fila > n1.fila) ori = 2;
+    else ori = 1;
+    break;
+  case 1:
+    if (n1.fila == n2.fila){
+      if (n2.columna > n1.columna) ori = 0;
+      else ori = 2;
+    }
+    else if (n2.columna < n1.columna) ori = 2;
+    else ori = 1;
+    break;
+  case 2:
+    if (n1.columna == n2.columna){
+      if (n2.fila > n1.fila) ori = 0;
+      else ori = 2;
+    }
+    else if (n2.fila < n1.fila) ori = 2;
+    else ori = 1;
+    break;
+  case 3:
+    if (n1.fila == n2.fila){
+      if (n2.columna < n1.columna) ori = 0;
+      else ori = 2;
+    }
+    else if (n2.columna > n1.columna) ori = 2;
+    else ori = 1;
+    break;
+  }
+
+
   int md = coldif + fildif ;
 
-  return md;
+  return md + ori;
 }
 
 class comp : public std::binary_function<estado, estado, bool>{
