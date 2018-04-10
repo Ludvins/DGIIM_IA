@@ -33,7 +33,6 @@ void ComportamientoJugador::PintaPlan(list<Action> plan) {
 
 int estimateDistance(const estado &n1, const estado &n2){
 
-  //current.fila + (current.orientacion-1)%2, current.columna - (current.orientacion - 2)%2, current.orientacio
   if ( n1.fila == n2.fila && n1.columna == n2.columna) return 0;
 
   int coldif = abs(n2.columna - n1.columna);
@@ -247,8 +246,13 @@ Action ComportamientoJugador::think(Sensores sensores) {
   }
   Action ret = plan.back();
 
-  if (plan.empty() == true) ret = actIDLE; 
-  else plan.pop_back();
+  if (plan.empty() == true) ret = actIDLE;
+  else
+    if (ret == actFORWARD && !isPath(mapaResultado[fil + (brujula-1)%2][col - (brujula-2)%2])){
+      cout << 1 << endl;;
+      return actIDLE;
+    }
+    else plan.pop_back();
 
   switch(ret){
   case actFORWARD:
@@ -264,7 +268,8 @@ Action ComportamientoJugador::think(Sensores sensores) {
     break;
   }
 
-  if (debug) cout << "Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
+  if (debug)
+    cout << "Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
 
 
   return ret;
