@@ -122,7 +122,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
   while (!openSet.empty()){
     estado current = *(openSet.begin());
-    if(debug) usleep(10000);
+    //ºif(debug) usleep(10000);
     if(debug) cout << "[PathFinding]: Iteracion bucle A* con fila " << current.fila << ", columna " << current.columna << " y orientacion " << current.orientacion << " y fScore " << fScore[current] << endl;
 
     if(current.fila == destino.fila && current.columna == destino.columna) return reconstructPath(cameFrom, current);
@@ -221,7 +221,7 @@ bool ComportamientoJugador::reconstructPath(const map<estado, estado, estadocomp
 }
 
 bool ComportamientoJugador::isPath(unsigned char c){
-  return c == 'T' || c == 'S';
+  return c == 'T' || c == 'S' || c == 'K';
 }
 
 Action ComportamientoJugador::think(Sensores sensores) {
