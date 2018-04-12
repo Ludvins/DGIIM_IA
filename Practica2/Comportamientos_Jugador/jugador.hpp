@@ -60,6 +60,7 @@ private:
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
   bool isPath(unsigned char c);
+  Action lookForK(Sensores sensores);
   bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 
 };

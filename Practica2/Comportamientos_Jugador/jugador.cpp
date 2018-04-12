@@ -35,8 +35,6 @@ int estimateDistance(const estado &n1, const estado &n2){
 
   if ( n1.fila == n2.fila && n1.columna == n2.columna) return 0;
 
-
-
   int coldif = abs(n2.columna - n1.columna);
   int fildif = abs(n2.fila - n1.fila);
 
@@ -88,7 +86,7 @@ class comp : public std::binary_function<estado, estado, bool>{
 public:
   comp(map <estado, int, estadocomp>& a): fScore(a){}
 
-  int operator()(const estado& a, const estado& b){
+  int operator()(const estado& a, const estado& b) const {
     return fScore.get()[a] < fScore.get()[b];
   }
 };
@@ -174,6 +172,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
           openSet.insert(neighbor);
           if (debug) cout << "[PathFinding; Lambda]: Actualizado posicion en openSet." << endl << "[PathFinding; Lambda]: Estado de osenSet: ";
+
           if (debug) for(auto it : openSet){
             cout << it.fila  << " " << it.columna << " " << it.orientacion << "  ";
           }
@@ -233,13 +232,11 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
   if(hola){
 
-
     fil = sensores.mensajeF;
     col = sensores.mensajeC;
+
     destino = {sensores.destinoF, sensores.destinoC, 0};
     cout << "Fila Inicial:" << fil << "\nColumna Inicial: "<< col  << "\nBrujula: "<< brujula << endl;
-
-
 
     cout << "Entra funcion PathFinding" << endl; 
     estado a = {fil, col, brujula};
