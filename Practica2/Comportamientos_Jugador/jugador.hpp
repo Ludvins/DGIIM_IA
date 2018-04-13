@@ -22,9 +22,8 @@ struct estado {
 
 struct node {
 
-  int cont;
   char c;
-
+  int cont;
 };
 
 struct estadocomp  {
@@ -72,7 +71,8 @@ private:
 
   int addToKnownMap(Sensores sensores);
   int lookForPK(Sensores sensores);
-
+  void nextStep();
+  void valueToMap(int fila, int col, char c);
 
   bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 

@@ -234,6 +234,13 @@ int ComportamientoJugador::lookForPK(Sensores sensores){
   return -1;
 }
 
+void ComportamientoJugador::valueToMap(int fila, int col, char c){
+
+  if(isPath(c)) knownMap[fila][col].cont = INT_MAX;
+
+  knownMap[fila][col].c = c;
+}
+
 int ComportamientoJugador::addToKnownMap(Sensores sensores){
 
   //estado neighbor {current.fila + (current.orientacion-1)%2, current.columna - (current.orientacion - 2)%2, current.orientacion};
@@ -242,49 +249,52 @@ int ComportamientoJugador::addToKnownMap(Sensores sensores){
 
   switch (brujula) {
   case 0:
-    knownMap[filaR-1][colR].c = sensores.terreno[1];
-    knownMap[filaR-2][colR-1].c = sensores.terreno[2];
-    knownMap[filaR-2][colR].c = sensores.terreno[3];
-    knownMap[filaR-2][colR+1].c = sensores.terreno[4];
-    knownMap[filaR-3][colR -2].c = sensores.terreno[5];
-    knownMap[filaR-3][colR-1].c = sensores.terreno[6];
-    knownMap[filaR-3][colR].c = sensores.terreno[7];
-    knownMap[filaR-3][colR+1].c = sensores.terreno[8];
-    knownMap[filaR-3][colR+2].c = sensores.terreno[9];
+
+    valueToMap(filaR-1, colR, sensores.terreno[1]);
+    valueToMap(filaR-2, colR-1, sensores.terreno[2]);
+    valueToMap(filaR-2, colR, sensores.terreno[3]);
+    valueToMap(filaR-2, colR+1, sensores.terreno[4]);
+    valueToMap(filaR-3, colR -2, sensores.terreno[5]);
+    valueToMap(filaR-3, colR-1,sensores.terreno[6]);
+    valueToMap(filaR-3, colR,sensores.terreno[7]);
+    valueToMap(filaR-3, colR+1,sensores.terreno[8]);
+    valueToMap(filaR-3, colR+2, sensores.terreno[9]);
     break;
   case 1:
-    knownMap[filaR][colR+1].c = sensores.terreno[1];
-    knownMap[filaR-1][colR+2].c = sensores.terreno[2];
-    knownMap[filaR][colR+2].c = sensores.terreno[3];
-    knownMap[filaR+1][colR+2].c = sensores.terreno[4];
-    knownMap[filaR-2][colR+3].c = sensores.terreno[5];
-    knownMap[filaR-1][colR+3].c = sensores.terreno[6];
-    knownMap[filaR][colR+3].c = sensores.terreno[7];
-    knownMap[filaR+1][colR+3].c = sensores.terreno[8];
-    knownMap[filaR+2][colR+3].c = sensores.terreno[9];
+    valueToMap(filaR, colR+1, sensores.terreno[1]);
+    valueToMap(filaR-1, colR+2,  sensores.terreno[2]);
+    valueToMap(filaR, colR+2, sensores.terreno[3]);
+    valueToMap(filaR+1, colR+2,  sensores.terreno[4]);
+    valueToMap(filaR-2, colR+3, sensores.terreno[5]);
+    valueToMap(filaR-1, colR+3, sensores.terreno[6]);
+    valueToMap(filaR, colR+3, sensores.terreno[7]);
+    valueToMap(filaR+1, colR+3, sensores.terreno[8]);
+    valueToMap(filaR+2, colR+3, sensores.terreno[9]);
     break;
   case 2:
-    knownMap[filaR+1][colR].c = sensores.terreno[1];
-    knownMap[filaR+2][colR+1].c = sensores.terreno[2];
-    knownMap[filaR+2][colR].c = sensores.terreno[3];
-    knownMap[filaR+2][colR-1].c = sensores.terreno[4];
-    knownMap[filaR+3][colR+2].c = sensores.terreno[5];
-    knownMap[filaR+3][colR+1].c = sensores.terreno[6];
-    knownMap[filaR+3][colR].c = sensores.terreno[7];
-    knownMap[filaR+3][colR-1].c = sensores.terreno[8];
-    knownMap[filaR+3][colR-2].c = sensores.terreno[9];
+
+    valueToMap(filaR+1, colR, sensores.terreno[1]);
+    valueToMap(filaR+2, colR+1, sensores.terreno[2]);
+    valueToMap(filaR+2, colR, sensores.terreno[3]);
+    valueToMap(filaR+2, colR-1, sensores.terreno[4]);
+    valueToMap(filaR+3, colR+2, sensores.terreno[5]);
+    valueToMap(filaR+3, colR+1,sensores.terreno[6]);
+    valueToMap(filaR+3, colR,sensores.terreno[7]);
+    valueToMap(filaR+3, colR-1,sensores.terreno[8]);
+    valueToMap(filaR+3, colR-2, sensores.terreno[9]);
     break;
 
   case 3:
-    knownMap[filaR][colR-1].c = sensores.terreno[1];
-    knownMap[filaR+1][colR-2].c = sensores.terreno[2];
-    knownMap[filaR][colR-2].c = sensores.terreno[3];
-    knownMap[filaR-1][colR-2].c = sensores.terreno[4];
-    knownMap[filaR+2][colR-3].c = sensores.terreno[5];
-    knownMap[filaR+1][colR-3].c = sensores.terreno[6];
-    knownMap[filaR][colR-3].c = sensores.terreno[7];
-    knownMap[filaR-1][colR-3].c = sensores.terreno[8];
-    knownMap[filaR-2][colR-3].c = sensores.terreno[9];
+
+    valueToMap(filaR, colR-1, sensores.terreno[1]);
+    valueToMap(filaR+1, colR-2,  sensores.terreno[2]);
+    valueToMap(filaR, colR-2, sensores.terreno[3]);
+    valueToMap(filaR-1, colR-2,  sensores.terreno[4]);
+    valueToMap(filaR+2, colR-3, sensores.terreno[5]);
+    valueToMap(filaR+1, colR-3, sensores.terreno[6]);
+    valueToMap(filaR, colR-3, sensores.terreno[7]);
+    valueToMap(filaR-1, colR-3, sensores.terreno[8]);
+    valueToMap(filaR-2, colR-3, sensores.terreno[9]);
     break;
 
     }
@@ -293,13 +303,33 @@ int ComportamientoJugador::addToKnownMap(Sensores sensores){
 
 }
 
+void ComportamientoJugador::nextStep(){
+
+  node forward = knownMap[filaR + (brujula-1)%2][colR - (brujula-2)%2];
+  node right = knownMap[filaR - (brujula-2)%2][colR - (brujula - 1)%2];
+  node left = knownMap[filaR + (brujula-2)%2][colR + (brujula - 1)%2];
+
+  if(isPath(forward.c)) plan.push_back(actFORWARD);
+  else if (right.cont == min (right.cont, left.cont) && isPath(right.c)){
+    plan.push_back(actFORWARD);
+    plan.push_back(actTURN_R);
+  }
+  else if (isPath(left.c) && left.cont == min(left.cont, right.cont)){
+    plan.push_back(actFORWARD);
+    plan.push_back(actTURN_L);
+
+  }
+}
 Action ComportamientoJugador::think(Sensores sensores) {
 
 
   if (addToKnownMap(sensores) == -1){
     cout << "No hay K" << endl;
 
-    return actFORWARD;
+    nextStep();
+    Action ret = plan.back();
+    plan.pop_back();
+    return ret;
 
   }
   cout << "Hay K" << endl;
