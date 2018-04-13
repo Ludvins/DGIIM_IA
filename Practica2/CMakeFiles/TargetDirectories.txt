@@ -1,9 +1,0 @@
-/home/ludvins/Git/IA/Practica2/CMakeFiles/rebuild_cache.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/edit_cache.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/BelkanSG.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/GLUILib.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/Belkan.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/obj3DLib.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/motorLib.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/modelosBelkanLib.dir
-/home/ludvins/Git/IA/Practica2/CMakeFiles/comportamientosLib.dir
