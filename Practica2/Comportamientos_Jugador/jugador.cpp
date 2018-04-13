@@ -351,7 +351,9 @@ Action ComportamientoJugador::think(Sensores sensores) {
     nextStep();
 
     usleep(100000);
-  }
+    }
+  }else{
+
   cout << "Hay K" << endl;
 
   }
