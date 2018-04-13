@@ -20,6 +20,13 @@ struct estado {
   }
 };
 
+struct node {
+
+  int cont;
+  char c;
+
+};
+
 struct estadocomp  {
   bool operator() (const estado& lhs, const estado& rhs) const;
 };
@@ -54,13 +61,19 @@ private:
   int fil, col, brujula;
   estado destino;
   list<Action> plan;
+  node knownMap[200][200];
+  int filaR = 100, colR = 100;
 
   bool hola = true;
 
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
   bool isPath(unsigned char c);
-  Action lookForK(Sensores sensores);
+
+  int addToKnownMap(Sensores sensores);
+  int lookForPK(Sensores sensores);
+
+
   bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 
 };
