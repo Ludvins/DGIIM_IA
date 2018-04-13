@@ -236,7 +236,11 @@ int ComportamientoJugador::lookForPK(Sensores sensores){
 
 void ComportamientoJugador::valueToMap(int fila, int col, char c){
 
-  if(isPath(c)) knownMap[fila][col].cont = INT_MAX;
+  cout << "[valueToMap]: Entra a función: fila " << fila << " columna " << col << " char " << c << endl;
+  if(isPath(c)){
+    cout << "[valueToMap]; Es un camino. " << endl;
+    knownMap[fila][col].cont = INT_MAX;
+  }
 
   knownMap[fila][col].c = c;
 }
@@ -244,8 +248,13 @@ void ComportamientoJugador::valueToMap(int fila, int col, char c){
 int ComportamientoJugador::addToKnownMap(Sensores sensores){
 
   //estado neighbor {current.fila + (current.orientacion-1)%2, current.columna - (current.orientacion - 2)%2, current.orientacion};
-
+  cout << "[addToKnownMap]: Posicion actual: " << filaR << " " << colR << " " << brujula << endl;
   knownMap[filaR][colR].c = sensores.terreno[0];
+
+  cout << sensores.terreno[5] << " " << sensores.terreno[6] << " " << sensores.terreno[7] << " " << sensores.terreno[8] << " " << sensores.terreno[9] << endl;
+  cout << "  " << sensores.terreno[2] << " " << sensores.terreno[3] << " " << sensores.terreno[4] << endl;
+  cout << "    " << sensores.terreno[1] << endl;
+  cout << "    " << sensores.terreno[0] << endl;
 
   switch (brujula) {
   case 0:
@@ -299,6 +308,8 @@ int ComportamientoJugador::addToKnownMap(Sensores sensores){
 
     }
 
+  cout << "[addToKnownMap]: Añadidos valores a la vista." << endl;
+
   return lookForPK(sensores);
 
 }
@@ -309,12 +320,23 @@ void ComportamientoJugador::nextStep(){
   node right = knownMap[filaR - (brujula-2)%2][colR - (brujula - 1)%2];
   node left = knownMap[filaR + (brujula-2)%2][colR + (brujula - 1)%2];
 
-  if(isPath(forward.c)) plan.push_back(actFORWARD);
+  if(isPath(forward.c)){
+
+    filaR = filaR + (brujula-1)%2;
+    colR = colR - (brujula-2)%2;
+    plan.push_back(actFORWARD);
+  }
   else if (right.cont == min (right.cont, left.cont) && isPath(right.c)){
+
+    filaR = filaR - (brujula-2)%2;
+    colR = colR - (brujula-1)%2;
     plan.push_back(actFORWARD);
     plan.push_back(actTURN_R);
   }
   else if (isPath(left.c) && left.cont == min(left.cont, right.cont)){
+
+    filaR = filaR + (brujula-2)%2;
+    colR = colR + (brujula - 1)%2;
     plan.push_back(actFORWARD);
     plan.push_back(actTURN_L);
 
@@ -322,67 +344,21 @@ void ComportamientoJugador::nextStep(){
 }
 Action ComportamientoJugador::think(Sensores sensores) {
 
-
-  if (addToKnownMap(sensores) == -1){
+  if(plan.empty()){
+    if (addToKnownMap(sensores) == -1){
     cout << "No hay K" << endl;
 
     nextStep();
-    Action ret = plan.back();
-    plan.pop_back();
-    return ret;
 
+    usleep(100000);
   }
   cout << "Hay K" << endl;
 
-
-
-  /*
-  if(hola){
-
-    fil = sensores.mensajeF;
-    col = sensores.mensajeC;
-
-    destino = {sensores.destinoF, sensores.destinoC, 0};
-    cout << "Fila Inicial:" << fil << "\nColumna Inicial: "<< col  << "\nBrujula: "<< brujula << endl;
-
-    cout << "Entra funcion PathFinding" << endl; 
-    estado a = {fil, col, brujula};
-    pathFinding(a, destino, plan);
-
-    cout << "Algoritmo terminado" << endl;
-    hola = false;
   }
+
   Action ret = plan.back();
-
-  if (plan.empty() == true) ret = actIDLE;
-  else
-    if (ret == actFORWARD && !isPath(mapaResultado[fil + (brujula-1)%2][col - (brujula-2)%2])){
-      cout << 1 << endl;;
-      return actIDLE;
-    }
-    else plan.pop_back();
-
-  switch(ret){
-  case actFORWARD:
-
-    fil += (brujula-1)%2;
-    col -= (brujula -2)%2;
-    break;
-  case actTURN_L:
-    brujula = (brujula+3)%4;
-    break;
-  case actTURN_R:
-    brujula = (brujula +1)%4;
-    break;
-  }
-
-  if (debug)
-    cout << "Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
-
-
+  plan.pop_back();
   return ret;
-
-  */
 
 }
 
