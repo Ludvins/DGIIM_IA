@@ -35,6 +35,8 @@ int estimateDistance(const estado &n1, const estado &n2){
 
   if ( n1.fila == n2.fila && n1.columna == n2.columna) return 0;
 
+
+
   int coldif = abs(n2.columna - n1.columna);
   int fildif = abs(n2.fila - n1.fila);
 
@@ -141,7 +143,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
       if (!closedSet.count(neighbor)){ // Not in closedSet
 
         if (debug) cout << "[PathFinding; Lambda]: Vecino no explorado" << endl;
-        if (openSet.find( neighbor) == openSet.end()){ // Not in openSet
+        if (!openSet.count( neighbor)){ // Not in openSet
             openSet.insert( neighbor );
             if (debug) cout << "[PathFinding; Lambda]: Vecino insertado en Lista de nodos pendientes" << endl;
         }
@@ -150,7 +152,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
         if (debug) cout << "[PathFinding; Lambda]: Inicializado valor de gScore a inf." << endl;
 
-        int tentative_gScore = gScore[current] + 1; //Cambiar esta distancia
+        int tentative_gScore = gScore[current] + 1;
 
         if (debug) cout << "[PathFinding; Lambda]: Calculado posible nuevo gScore." << endl;
 
@@ -167,12 +169,11 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
           openSet.erase(neighbor);
           fScore.erase(neighbor);
-          fScore[neighbor] = gScore[neighbor] + estimateDistance(neighbor, destino); //same
+          fScore[neighbor] = gScore[neighbor] + estimateDistance(neighbor, destino);
           if (debug) cout << "[PathFinding; Lambda]: Actualizado valor en fScore: " << fScore[neighbor] << endl;
 
           openSet.insert(neighbor);
           if (debug) cout << "[PathFinding; Lambda]: Actualizado posicion en openSet." << endl << "[PathFinding; Lambda]: Estado de osenSet: ";
-
           if (debug) for(auto it : openSet){
             cout << it.fila  << " " << it.columna << " " << it.orientacion << "  ";
           }
@@ -229,7 +230,6 @@ bool ComportamientoJugador::isPath(unsigned char c){
 
 Action ComportamientoJugador::think(Sensores sensores) {
 
-
   if(hola){
 
     fil = sensores.mensajeF;
@@ -274,8 +274,6 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 
   return ret;
-
-
 
 }
 
