@@ -9,6 +9,7 @@
 #include <map>
 #include <unistd.h>
 
+
 struct estado {
   int fila;
   int columna;
@@ -18,6 +19,11 @@ struct estado {
   bool operator==(estado b){
     return fila == b.fila && columna == b.columna;
   }
+};
+
+struct nodeestado {
+  estado a;
+  estado * father;
 };
 
 struct node {
@@ -63,7 +69,7 @@ private:
   node knownMap[200][200];
   int filaR = 100, colR = 100;
 
-  bool hola = true;
+  bool firstTime = true;
 
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);

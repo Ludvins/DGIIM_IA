@@ -75,7 +75,6 @@ int estimateDistance(const estado &n1, const estado &n2){
     break;
   }
 
-
   int md = coldif + fildif ;
 
   return md + ori;
@@ -87,7 +86,9 @@ public:
   comp(map <estado, int, estadocomp>& a): fScore(a){}
 
   int operator()(const estado& a, const estado& b) const {
-    return fScore.get()[a] < fScore.get()[b];
+    if (fScore.get()[a] < fScore.get()[b]) return true;
+    if (fScore.get()[a] > fScore.get()[b]) return false;
+    return estadocomp()(a,b);
   }
 };
 
@@ -107,9 +108,10 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
   set < estado, estadocomp > closedSet;
 
-  multiset < estado, comp > openSet((comp(fScore)));
+  set < estado, comp > openSet((comp(fScore)));
 
   map < estado, estado, estadocomp> cameFrom;
+  static int a = 0;
 
   if(debug) cout << "[PathFinding]: Inicializa Estructuras" << endl;
 
@@ -123,11 +125,14 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
   while (!openSet.empty()){
     estado current = *(openSet.begin());
+    a++;
     if(debug) usleep(100000);
     if(debug) cout << "[PathFinding]: Iteracion bucle A* con fila " << current.fila << ", columna " << current.columna << " y orientacion " << current.orientacion << " y fScore " << fScore[current] << endl;
 
-    if(current.fila == destino.fila && current.columna == destino.columna) return reconstructPath(cameFrom, current);
-
+    if(current.fila == destino.fila && current.columna == destino.columna){
+      cout << a << " Nodos explorados" << endl;
+      return reconstructPath(cameFrom, current);
+    }
     if (debug) cout << "[PathFinding]: No es el nodo buscado" << endl;
     openSet.erase(openSet.begin());
     if (debug) cout << "[PathFinding]: Nodo eliminado de nodos pendientes. " << endl;
@@ -135,13 +140,13 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
     if (debug) cout << "[PathFinding]: Nodo insertado en nodos visitados "<< endl;
 
     // Lambda Function
-    auto f = [&](estado neighbor){
+    auto f = [&](estado neighbor, int dist){
 
       if (debug) cout << "[PathFinding; Lambda]: Entra función." << endl;
       if (!closedSet.count(neighbor)){ // Not in closedSet
 
         if (debug) cout << "[PathFinding; Lambda]: Vecino no explorado" << endl;
-        if (openSet.find( neighbor) == openSet.end()){ // Not in openSet
+        if (!openSet.count( neighbor)){ // Not in openSet
             openSet.insert( neighbor );
             if (debug) cout << "[PathFinding; Lambda]: Vecino insertado en Lista de nodos pendientes" << endl;
         }
@@ -150,7 +155,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
         if (debug) cout << "[PathFinding; Lambda]: Inicializado valor de gScore a inf." << endl;
 
-        int tentative_gScore = gScore[current] + 1; //Cambiar esta distancia
+        int tentative_gScore = gScore[current] + dist;
 
         if (debug) cout << "[PathFinding; Lambda]: Calculado posible nuevo gScore." << endl;
 
@@ -184,20 +189,23 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
     if(isPath(mapaResultado[ current.fila + (current.orientacion-1) %2 ] [ current.columna - (current.orientacion - 2)%2])){ //Forward
       estado neighbor {current.fila + (current.orientacion-1)%2, current.columna - (current.orientacion - 2)%2, current.orientacion};
       if (debug) cout << "[PathFinding]: Nodo Vecino 1: " << neighbor.fila << " " << neighbor.columna << " " << neighbor.orientacion << endl;
-      f(neighbor);
+      f(neighbor, 1);
     }
 
     if(isPath(mapaResultado [current.fila - (current.orientacion - 2)%2 ] [current.columna - (current.orientacion- 1)%2] )){ //Right
-      estado neighbor {current.fila, current.columna, (current.orientacion+1)%4};
+      //estado neighbor {current.fila, current.columna, (current.orientacion+1)%4};
+      estado neighbor {current.fila - (current.orientacion -2)%2, current.columna - (current.orientacion-1)%2, (current.orientacion+1)%4};
 
       if (debug) cout << "[PathFinding]: Nodo Vecino 2: " << neighbor.fila << " " << neighbor.columna << " " << neighbor.orientacion << endl;
-      f(neighbor);
+      f(neighbor, 2);
     }
 
     if(isPath(mapaResultado [current.fila + (current.orientacion - 2)%2 ] [current.columna + (current.orientacion- 1)%2] )){ //Left
-      estado neighbor {current.fila, current.columna, (current.orientacion+3)%4};
+      //estado neighbor {current.fila, current.columna, (current.orientacion+3)%4};
+      estado neighbor {current.fila + (current.orientacion - 2)%2, current.columna + (current.orientacion - 1)%2, (current.orientacion+3)%4};
+
       if (debug) cout << "[PathFinding]: Nodo Vecino 3: " << neighbor.fila << " " << neighbor.columna << " " << neighbor.orientacion << endl;
-      f(neighbor);
+      f(neighbor, 2);
     }
   }
 }
@@ -211,10 +219,12 @@ bool ComportamientoJugador::reconstructPath(const map<estado, estado, estadocomp
   for(auto a = cameFrom.find(b) ;a != cameFrom.end(); a=cameFrom.find(a->second)){
     if (debug) cout << "[PathFinding; Lambda; reconstructPath]: Estado anterior: " << a->second.fila << " " << a->second.columna << " " << a->second.orientacion <<endl;
 
-    if(a->second.orientacion == b.orientacion) plan.push_back(actFORWARD);
-    else
-      if ( (a->second.orientacion + 1)%4 ==b.orientacion ) plan.push_back(actTURN_R);
-      else if ( (a->second.orientacion + 3)%4 == b.orientacion ) plan.push_back(actTURN_L);
+    plan.push_back(actFORWARD);
+    if ( (a->second.orientacion + 1)%4 ==b.orientacion ){
+      plan.push_back(actTURN_R);
+    }
+    else if ( (a->second.orientacion + 3)%4 == b.orientacion ) plan.push_back(actTURN_L);
+
 
     b = a->second;
   }
@@ -344,24 +354,75 @@ void ComportamientoJugador::nextStep(){
 }
 Action ComportamientoJugador::think(Sensores sensores) {
 
-  if(plan.empty()){
-    if (addToKnownMap(sensores) == -1){
-    cout << "No hay K" << endl;
+  if(firstTime){
+     fil = sensores.mensajeF;
+     col = sensores.mensajeC;
 
-    nextStep();
+     int nivel = fil == -1 ? 3 : 1;
 
-    usleep(100000);
-    }
-  }else{
+     switch (nivel) {
+     case 1:
+       {
+         fil = sensores.mensajeF;
+         col = sensores.mensajeC;
 
-  cout << "Hay K" << endl;
+         destino = {sensores.destinoF, sensores.destinoC, 0};
+         cout << "Fila Inicial: " << fil << "\nColumna Inicial: "<< col  << "\nBrujula: "<< brujula << endl;
 
+         cout << "Entra funcion PathFinding" << endl;
+         estado a = {fil, col, brujula};
+         pathFinding(a, destino, plan);
+
+         cout << "Algoritmo terminado" << endl;
+         break;
+       }
+     case 3:
+       {
+         if (addToKnownMap(sensores) == -1){
+           cout << "No hay K" << endl;
+           nextStep();
+           usleep(100000);
+         }
+
+         break;
+       }
+     }
+
+
+     firstTime = false;
   }
 
   Action ret = plan.back();
-  plan.pop_back();
+
+  if (plan.empty() == true) ret = actIDLE;
+  else
+    if (ret == actFORWARD && !isPath(mapaResultado[fil + (brujula-1)%2][col - (brujula-2)%2])){
+      cout << 1 << endl;;
+      return actIDLE;
+    }
+    else plan.pop_back();
+
+  switch(ret){
+  case actFORWARD:
+
+    fil += (brujula-1)%2;
+    col -= (brujula -2)%2;
+    break;
+  case actTURN_L:
+    brujula = (brujula+3)%4;
+    break;
+  case actTURN_R:
+    brujula = (brujula +1)%4;
+    break;
+  }
+
+  if (debug)
+    cout << "Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
+
+
   return ret;
 
+  
 }
 
 int ComportamientoJugador::interact(Action accion, int valor){
