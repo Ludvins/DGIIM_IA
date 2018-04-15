@@ -39,7 +39,7 @@ int estimateDistance(const estado &n1, const estado &n2){
   int fildif = abs(n2.fila - n1.fila);
 
   int ori = 2;
-
+  
   switch(n1.orientacion){
   case 0:
     if (n1.columna == n2.columna){
@@ -73,7 +73,7 @@ int estimateDistance(const estado &n1, const estado &n2){
     else if (n2.columna > n1.columna) ori = 2;
     else ori = 1;
     break;
-  }
+    }
 
   int md = coldif + fildif ;
 
@@ -111,7 +111,9 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
   set < estado, comp > openSet((comp(fScore)));
 
   map < estado, estado, estadocomp> cameFrom;
+
   static int a = 0;
+  bool Bounded = false;
 
   if(debug) cout << "[PathFinding]: Inicializa Estructuras" << endl;
 
@@ -130,7 +132,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
     if(debug) cout << "[PathFinding]: Iteracion bucle A* con fila " << current.fila << ", columna " << current.columna << " y orientacion " << current.orientacion << " y fScore " << fScore[current] << endl;
 
     if(current.fila == destino.fila && current.columna == destino.columna){
-      cout << a << " Nodos explorados" << endl;
+      cout <<  a << " Nodos explorados" << endl;
       return reconstructPath(cameFrom, current);
     }
     if (debug) cout << "[PathFinding]: No es el nodo buscado" << endl;
@@ -172,7 +174,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
 
           openSet.erase(neighbor);
           fScore.erase(neighbor);
-          fScore[neighbor] = gScore[neighbor] + estimateDistance(neighbor, destino); //same
+          fScore[neighbor] = estimateDistance(neighbor, destino) + Bounded==true ? gScore[neighbor] : 0; //same
           if (debug) cout << "[PathFinding; Lambda]: Actualizado valor en fScore: " << fScore[neighbor] << endl;
 
           openSet.insert(neighbor);
@@ -207,6 +209,7 @@ bool ComportamientoJugador::pathFinding(const estado &origen, const estado &dest
       if (debug) cout << "[PathFinding]: Nodo Vecino 3: " << neighbor.fila << " " << neighbor.columna << " " << neighbor.orientacion << endl;
       f(neighbor, 2);
     }
+
   }
 }
 
@@ -354,6 +357,8 @@ void ComportamientoJugador::nextStep(){
 }
 Action ComportamientoJugador::think(Sensores sensores) {
 
+  static int it = 0;
+
   if(firstTime){
      fil = sensores.mensajeF;
      col = sensores.mensajeC;
@@ -363,12 +368,10 @@ Action ComportamientoJugador::think(Sensores sensores) {
      switch (nivel) {
      case 1:
        {
-         fil = sensores.mensajeF;
-         col = sensores.mensajeC;
 
          destino = {sensores.destinoF, sensores.destinoC, 0};
          cout << "Fila Inicial: " << fil << "\nColumna Inicial: "<< col  << "\nBrujula: "<< brujula << endl;
-
+         cout << "Destino " << sensores.destinoF << " " << sensores.destinoC << endl;
          cout << "Entra funcion PathFinding" << endl;
          estado a = {fil, col, brujula};
          pathFinding(a, destino, plan);
@@ -394,7 +397,10 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
   Action ret = plan.back();
 
-  if (plan.empty() == true) ret = actIDLE;
+  if (plan.empty() == true){
+    cout << "Número de pasos: " << it << endl;
+  ret = actIDLE;
+  }
   else
     if (ret == actFORWARD && !isPath(mapaResultado[fil + (brujula-1)%2][col - (brujula-2)%2])){
       cout << 1 << endl;;
@@ -419,7 +425,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
   if (debug)
     cout << "Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
 
-
+  it++;
   return ret;
 
   
