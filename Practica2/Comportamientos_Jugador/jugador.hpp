@@ -79,6 +79,7 @@ private:
   int lookForPK(Sensores sensores);
   void nextStep();
   void valueToMap(int fila, int col, char c);
+  void goToPK(Sensores sensores, int k);
 
   bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 

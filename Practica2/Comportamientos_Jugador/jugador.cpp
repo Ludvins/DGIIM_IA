@@ -393,27 +393,71 @@ void ComportamientoJugador::nextStep(){
 
   }
 }
+
+void ComportamientoJugador::goToPK(Sensores sensores, int k){
+
+  cout << "[goToPK]: K en posición: " << k << endl;
+  switch(k){
+  case 1:
+    if (isPath(sensores.terreno[2])){
+      plan.push_back(actFORWARD);
+      plan.push_back(actTURN_L);
+      plan.push_back(actFORWARD);
+    }
+    else plan.push_back(actTURN_L);
+    break;
+  case 3:
+    if (isPath(sensores.terreno[2])){
+      plan.push_back(actFORWARD);
+      plan.push_back(actTURN_R);
+      plan.push_back(actFORWARD);
+    }
+    else plan.push_back(actTURN_R);
+    break;
+  case 6:
+    goToPK(sensores, 2);
+    break;
+  case 2:
+    if(isPath(sensores.terreno[2])) plan.push_back(actFORWARD);
+    break;
+
+  case 4:
+  case 5:
+  case 9:
+  case 10:
+  case 11:
+    plan.push_back(actTURN_L);
+    goToPK(sensores, 6);
+    break;
+
+  default:
+    plan.push_back(actTURN_R);
+    goToPK(sensores, 6);
+    break;
+  }
+
+}
 Action ComportamientoJugador::think(Sensores sensores) {
 
   int nivel = 3;
 
-  if(nivel == 3){
-
+  if(nivel == 3 ){
+    cout << "Nivel 3 plan vacio. " << endl;
+    int k = addToKnownMap(sensores);
     usleep(100000);
-    if(addToKnownMap(sensores) == -1){
+    if(k == -1){
       cout << "No hay k" << endl;
       nextStep();
+
+    }else{
+      cout << "Hay k" << endl;
+      usleep(10000000);
+      goToPK(sensores, k);
     }
 
     Action ret = plan.back();
     plan.pop_back();
     return ret;
-
-
-
-
-
-
 
   }
 
