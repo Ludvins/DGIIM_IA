@@ -19,6 +19,16 @@ struct estado {
   bool operator==(estado b){
     return fila == b.fila && columna == b.columna;
   }
+
+  friend ostream& operator<<(ostream& c, estado& a){
+    c << a.fila << " " << a.columna << " " << a.orientacion;
+    return c;
+  }
+
+  friend ostream& operator<<(ostream& c, const estado& a){
+    c << a.fila << " " << a.columna << " " << a.orientacion;
+    return c;
+  }
 };
 
 struct nodeestado {
@@ -66,22 +76,23 @@ private:
   int fil, col, brujula;
   estado destino;
   list<Action> plan;
-  node knownMap[200][200];
+  unsigned char knownMapC[200][200];
+  int knownMapI [200][200];
   int filaR = 100, colR = 100;
 
   bool firstTime = true;
 
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
-  bool isPath(unsigned char c);
+  //bool isPath(unsigned char c);
 
-  int addToKnownMap(Sensores sensores);
+  estado addToKnownMap(Sensores sensores);
   int lookForPK(Sensores sensores);
   void nextStep();
-  void valueToMap(int fila, int col, char c);
-  void goToPK(Sensores sensores, int k);
+  void valueToMap(int fila, int col, char c, estado& ret);
+  void goToPK(Sensores sensores, estado k);
 
-  bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
+  //bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 
 };
 
