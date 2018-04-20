@@ -70,7 +70,7 @@ class ComportamientoJugador : public Comportamiento {
     Action think(Sensores sensores);
     int interact(Action accion, int valor);
   ComportamientoJugador * clone(){return new ComportamientoJugador(*this);}
-
+  void VisualizaPlan(const estado &st, const list<Action> &plan);
 private:
   // Declarar Variables de Estado
   int fil, col, brujula;
@@ -87,10 +87,10 @@ private:
   //bool isPath(unsigned char c);
 
   estado addToKnownMap(Sensores sensores);
-  int lookForPK(Sensores sensores);
+  //int lookForPK(Sensores sensores);
   void nextStep();
   void valueToMap(int fila, int col, char c, estado& ret);
-  void goToPK(Sensores sensores, estado k);
+  void goToPK( estado k);
 
   //bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 
