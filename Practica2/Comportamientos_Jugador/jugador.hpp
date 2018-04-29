@@ -9,9 +9,14 @@
 #include <map>
 #include <unistd.h>
 #include <limits.h>
+#include <stdlib.h>     /* srand, rand */
+#include <cmath>
+#include <algorithm>
+#include <set>
+#include <memory>
 
 struct pairIntchar{
-  int i = INT_MAX;
+  int i = 0;
   char c = '?';
 
   operator char&() { return c; }
@@ -28,7 +33,7 @@ struct pairIntchar{
 
 struct mapOfChar {
   map < int , map <int, pairIntchar> > m;
-  int cont = 0;
+  int cont = 1;
 
 public:
   void insert (int x, int y, char c){
@@ -37,7 +42,6 @@ public:
 
   void count( int f, int c){
     m[f][c].i = cont;
-    cout << cont << endl;
     cont++;
   }
 
@@ -117,6 +121,7 @@ class ComportamientoJugador : public Comportamiento {
     int interact(Action accion, int valor);
   ComportamientoJugador * clone(){return new ComportamientoJugador(*this);}
   void VisualizaPlan(const estado &st, const list<Action> &plan);
+
 private:
   // Declarar Variables de Estado
   int fil, col, brujula;

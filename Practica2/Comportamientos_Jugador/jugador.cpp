@@ -1,13 +1,6 @@
 #include "./jugador.hpp"
 #include "../include/motorlib/util.h"
 
-#include <iostream>
-#include <cmath>
-#include <map>
-#include <limits.h>
-#include <algorithm>
-#include <set>
-#include <memory>
 
 int debug = false;
 bool case2 = true;
@@ -179,11 +172,6 @@ void reconstructPath(const map<estado, estado, estadocomp>& cameFrom, const esta
 
 }
 
-struct point {
-  int x;
-  int y;
-};
-
 template <typename T>
 void getNeighbors(estado current, T& M, list<pair<estado, int>>& neighbors){
 
@@ -216,8 +204,6 @@ void getNeighbors(estado current, T& M, list<pair<estado, int>>& neighbors){
       estado neighbor = {rowBack, colBack, (current.orientacion+2)%4};
       if (debug) cout << "[PathFinding]: Nodo vecino 4. " << neighbor.fila << " " << neighbor.columna << " " << neighbor.orientacion << endl;
       neighbors.push_back(make_pair(neighbor,3));
-    
-
    }
 }
 
@@ -323,7 +309,6 @@ bool a_star_algorithm(const estado& origen, const estado& destino, list<Action>&
 
 bool ComportamientoJugador::pathFinding(const estado &origen, const estado &destino, list<Action> &plan) {
   return a_star_algorithm <> (origen, destino, plan, mapaResultado);
-
 }
 
 
@@ -389,6 +374,17 @@ void ComportamientoJugador::saveVisibleMap(Sensores s, T& m){
 
 void ComportamientoJugador::RandomBehaviour(mapOfChar& knownMap){
 
+  static bool firsttime = true;
+
+  if (firsttime){
+    plan.push_back(actTURN_R);
+    plan.push_back(actTURN_R);
+    plan.push_back(actTURN_R);
+
+    firsttime = false;
+    return;
+  }
+
 
   estado forward = {fil + (brujula-1)%2, col - (brujula-2)%2, brujula};
   pairIntchar forwardp = knownMap.m[forward.fila][forward.columna];
@@ -407,88 +403,62 @@ void ComportamientoJugador::RandomBehaviour(mapOfChar& knownMap){
   char leftc = static_cast<char>(leftp);
   int lefti = static_cast<int>(leftp);
 
-  cout << forwardi << " " <<righti << " "<< lefti << endl;
+  plan.push_back(actFORWARD);
+
   if (!isPath(forwardc) && !isPath(rightc) && !isPath(leftc)){
     plan.push_back(actTURN_R);
     plan.push_back(actTURN_R);
     return;
   }
+
   if (isPath(forwardc)){
 
-    if(!isPath(rightc)){
-      if(!isPath(leftc)){
-        plan.push_back(actFORWARD);
+    if(!isPath(rightc) && isPath(leftc)){
+        if (forwardi > lefti){
+        plan.push_back(actTURN_L);
         return;
-      }
-      if (forwardi >= lefti){
-        plan.push_back(actFORWARD);
-        return;
-      }
-      plan.push_back(actFORWARD);
-      plan.push_back(actTURN_L);
-      return;
 
+      }
     }
 
-    if (!isPath(leftc)){
-      if (forwardi >= righti){
-        plan.push_back(actFORWARD);
+    if (!isPath(leftc) && isPath(rightc)){
+      if (forwardi > righti){
+        plan.push_back(actTURN_R);
         return;
       }
-      plan.push_back(actFORWARD);
+    }
+
+    if (isPath(leftc) && isPath(rightc)){
+
+      if(lefti < forwardi && lefti <= righti){
+        plan.push_back(actTURN_L);
+        return;
+    }
+      if(righti < forwardi && righti < lefti){
+        plan.push_back(actTURN_R);
+        return;
+      }
+    }
+  }
+  else{
+    if (isPath(leftc) && isPath(rightc)){
+      if (lefti >= righti){
+        plan.push_back(actTURN_R);
+        return;
+      }
+      plan.push_back(actTURN_L);
+      return;
+    }
+
+    if(isPath(leftc) && !isPath(rightc)){
+      plan.push_back(actTURN_L);
+      return;
+    }
+    if(isPath(rightc) && !isPath(leftc)){
       plan.push_back(actTURN_R);
       return;
     }
-
-    if (forwardi <= righti){
-      if( forwardi <= lefti){
-        plan.push_back(actFORWARD);
-        return;
-      }
-      plan.push_back(actFORWARD);
-      plan.push_back(actTURN_L);
-      return;
-
-    }
-
-    if(lefti <= righti){
-      plan.push_back(actFORWARD);
-      plan.push_back(actTURN_L);
-      return;
-    }
-    plan.push_back(actFORWARD);
-    plan.push_back(actTURN_R);
-    return;
-
   }
-
-  if (isPath(leftc)){
-    if(isPath(rightc)){
-      if (lefti >= righti){
-        plan.push_back(actFORWARD);
-        plan.push_back(actTURN_R);
-      return;
-      }
-    }
-    plan.push_back(actFORWARD);
-    plan.push_back(actTURN_L);
-    return;
-  }
-
-  if (isPath(rightc)){
-    if(isPath(leftc)){
-      if (righti > lefti){
-        plan.push_back(actFORWARD);
-        plan.push_back(actTURN_L);
-        return;
-      }
-    }
-    plan.push_back(actFORWARD);
-    plan.push_back(actTURN_R);
-    return;
-  }
-
-
 }
 
 
@@ -550,7 +520,7 @@ bool ComportamientoJugador::canSeeK(Sensores s, estado& k, mapOfChar& m){
   for (int i = 0; i < 15 ; i++){
     if (s.terreno[i] == 'K'){
       k = interpretVision(i, m);
-      cout << i << " "<< k << endl;
+      //cout << i << " "<< k << endl;
       return true;
     }
   }
@@ -578,89 +548,39 @@ bool ComportamientoJugador::objetiveHaschanged(estado obj, Sensores sensores){
 
 
 bool ComportamientoJugador::thereIsPathForK (const estado k, mapOfChar& knownMap){
-  cout << "[thereIsPathForK]. entra funcion" << endl;
+  //cout << "[thereIsPathForK]. entra funcion" << endl;
   return a_star_algorithm <> ({fil, col, brujula}, k, plan, knownMap.m);
 }
 
 
-void ComportamientoJugador::heuristicBehaviour(Sensores s, bool reset = false){
-
-
-  /*
-  saveVisibleMap <> (s, mapaResultado);
-  //static estado initial = {fil, col, brujula};
-  estado current = {fil, col, brujula};
-  static set<estado, estadocomp> closedSet;
-  static set<estado, estadocomp> visitedSet;
-
-  if(reset){
-    cout << "Limpiando" << endl;
-    closedSet.clear();
-    visitedSet.clear();
-    return;
-  }
-
-  if(visitedSet.count(current)) closedSet.insert(current);
-  visitedSet.insert(current);
-
-  list<pair<estado,int>> neighbors;
-  getNeighbors(current, mapaResultado, neighbors);
-
-  for (auto it = neighbors.begin(); it != neighbors.end(); it++){
-    if(closedSet.count(it->first)){
-      auto it2 = it;
-      neighbors.erase(it2);
-      it--;
-    }
-  }
-  if(neighbors.empty()){
-
-    estado closest = {INT_MAX, INT_MAX, 0};
-    int dist = INT_MAX;
-
-    for(int i = 0 ; i < mapaResultado.size(); i++){
-      for(int j = 0 ; j < mapaResultado.size(); j++){
-        if(isPath(mapaResultado[i][j])){
-          estado alt = {i,j,0};
-          if (dist > estimateDistance(alt, destino) && a_star_algorithm(current, alt, plan, mapaResultado)){
-            plan.clear();
-            closest = alt;
-            dist = estimateDistance(alt,destino);
-          }
-        }
-      }
-    }
-
-    a_star_algorithm(current, closest, plan, mapaResultado);
-
-
-
-  }
-  estado tempObjetive = neighbors.begin()->first;
-
-  for (auto it : neighbors){
-    if (estimateDistance(tempObjetive, destino) > estimateDistance(it.first, destino))
-      tempObjetive = it.first;
-  }
-
- 
-
-  a_star_algorithm(current, tempObjetive, plan, mapaResultado);
-  */
-}
-
 void ComportamientoJugador::copyKnownMap(mapOfChar& m, Sensores s){
+
+  for(int i = 0; i < mapaResultado.size(); i++){
+    mapaResultado[0][i] = 'P';
+    mapaResultado[1][i] = 'P';
+    mapaResultado[2][i] = 'P';
+    mapaResultado[mapaResultado.size()-1][i] = 'P';
+    mapaResultado[mapaResultado.size()-2][i] = 'P';
+    mapaResultado[mapaResultado.size()-3][i] = 'P';
+    mapaResultado[i][0] = 'P';
+    mapaResultado[i][1] = 'P';
+    mapaResultado[i][2] = 'P';
+    mapaResultado[i][mapaResultado.size()-1] = 'P';
+    mapaResultado[i][mapaResultado.size()-2] = 'P';
+    mapaResultado[i][mapaResultado.size()-3] = 'P';
+  }
+
   int rowdiff = s.mensajeF - fil;
   int coldiff = s.mensajeC - col;
-  cout << m << endl;
-  cout << rowdiff << " " << coldiff << endl;
+  //cout << m << endl;
+  //cout << rowdiff << " " << coldiff << endl;
   for(auto it: m.m){
     int row = it.first;
     for (auto it2 : it.second){
       int column = it2.first;
-      cout << "[copyKnownMap]: Fila: " << rowdiff + row << " columna: " << coldiff + column << " " << static_cast<char>(it2.second) << endl;
+      //cout << "[copyKnownMap]: Fila: " << rowdiff + row << " columna: " << coldiff + column << " " << static_cast<char>(it2.second) << endl;
       mapaResultado[rowdiff + row][coldiff+column] = static_cast<char>(it2.second);
-      cout << "[copyKnownMap]: Copiado" << endl;
+      //cout << "[copyKnownMap]: Copiado" << endl;
     }
   }
 }
@@ -670,13 +590,14 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
   // Implementar el cambio de objetivo.
 
-  static bool onObjetive = false;
+  static bool oneobjetive = false;
   //static estado current = {fil, col, brujula};
   destino = {sensores.destinoF, sensores.destinoC, 0};
   static int it = 0;
   static state state = LOOKINGFORK;
   static estado k;
   static mapOfChar knownMap;
+  if (oneobjetive) return actTURN_L;
 
   if (inicializeCoordenates(sensores)){
     state = KNOWEXACTCOORDENATESANDMAP;
@@ -685,6 +606,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
   if (fil == destino.fila && col == destino.columna && (state == LOOKINGFOROBJETIVE || state == KNOWINGCOORDENATES)){
     cout << "En el objetivo. " <<endl;
+    //oneobjetive = true;
    return actIDLE;
   }
 
@@ -711,7 +633,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
             RandomBehaviour(knownMap);
             break;
           }
-          cout << "Puedo ver la k en " << k << endl;
+          cout << "[Think]: Puedo ver la k en " << k << endl;
           state = GOINGFORK;
 
         case GOINGFORK:
@@ -734,33 +656,24 @@ Action ComportamientoJugador::think(Sensores sensores) {
           inicializeCoordenates(sensores, false); 
           state = KNOWINGCOORDENATES;
 
-          for ( int i = 0 ; i < mapaResultado.size() ; i++){
-            cout << endl;
-            for ( int j = 0 ; j < mapaResultado.size(); j++)
-              cout << mapaResultado[i][j] << " ";
-
-          }
-
         case KNOWINGCOORDENATES:
 
           if(a_star_algorithm <> ({fil, col, brujula}, destino, plan, mapaResultado)){
-            cout << "Hay un camino hacia el objetivo" << endl;
-            heuristicBehaviour(sensores, true);
+            //cout << "[Think]: Hay un camino hacia el objetivo" << endl;
             break;
           }
           state = LOOKINGFOROBJETIVE;
-          cout << "No hay camino al objetivo." << endl;
+          //cout << "No hay camino al objetivo." << endl;
 
         case LOOKINGFOROBJETIVE:
-          heuristicBehaviour(sensores);
           state = KNOWINGCOORDENATES;
           break;
 
         case KNOWEXACTCOORDENATESANDMAP:
 
-          cout << "fila inicial: " << fil << "\ncolumna inicial: "<< col  << "\nbrujula: "<< brujula << endl;
-          cout << "destino " << sensores.destinoF << " " << sensores.destinoC << endl;
-          cout << "entra funcion pathfinding" << endl;
+          cout << "[Think]: Fila inicial: " << fil << "\ncolumna inicial: "<< col  << "\nbrujula: "<< brujula << endl;
+          cout << "[Think]: Destino " << sensores.destinoF << " " << sensores.destinoC << endl;
+          cout << "[Think]: Entra funcion pathfinding" << endl;
           estado orig = {fil, col, brujula};
           pathFinding(orig, destino, plan);
           break;
@@ -768,8 +681,6 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 
   }
-
-  cout << "Sale switch" << endl;
 
   if(state == LOOKINGFOROBJETIVE || state == KNOWINGCOORDENATES) saveVisibleMap<> (sensores, mapaResultado);
   else
@@ -779,10 +690,12 @@ Action ComportamientoJugador::think(Sensores sensores) {
   Action ret;
   if (plan.empty()){
 
-    cout << "Plan vacio: Número de pasos: " << it << endl;
+    //cout << "Plan vacio: Número de pasos: " << it << endl;
     ret = actIDLE;
   }
   else{
+
+
     ret = plan.back();
     if (ret == actFORWARD && ( state == LOOKINGFOROBJETIVE || state == KNOWINGCOORDENATES) && !isPath(mapaResultado[fil+(brujula-1)%2][col-(brujula-2)%2], false)){
         cout << 1 << endl;
@@ -790,8 +703,23 @@ Action ComportamientoJugador::think(Sensores sensores) {
         a_star_algorithm <> ({fil, col, brujula}, destino, plan, mapaResultado);
         ret = plan.back();
     }
+
+    if (ret == actTURN_R && (state == LOOKINGFOROBJETIVE || state == KNOWINGCOORDENATES) && !isPath(mapaResultado[fil-(brujula-2)%2][col-(brujula-1)%2], false)){
+      cout << 2 << endl;
+      plan.clear();
+      a_star_algorithm <> ({fil, col, brujula}, destino, plan, mapaResultado);
+      ret = plan.back();
+    }
+
+    if (ret == actTURN_L && (state == LOOKINGFOROBJETIVE || state == KNOWINGCOORDENATES) && !isPath(mapaResultado[fil+(brujula-2)%2][col+(brujula-1)%2], false)){
+      cout << 2 << endl;
+      plan.clear();
+      a_star_algorithm <> ({fil, col, brujula}, destino, plan, mapaResultado);
+      ret = plan.back();
+    }
+
     if (ret == actFORWARD && sensores.superficie[2] == 'a'){ // Avoid Aldeano
-      cout << "Aldeano esquivado." << endl;;
+      cout << "[Think]: Evita colision con aldeano." << endl;;
       return actIDLE;
     }
     else plan.pop_back();
@@ -799,8 +727,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
   updatePosition(ret , fil, col, brujula);
 
-  if (debug)
-    cout << "Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
+  cout << "[Think]: Posicion Actual: \n\tFila: " << fil << "\n\tColumna: " << col << "\n\tOrientacion: " << brujula << endl;
 
   it++;
   return ret;
