@@ -8,6 +8,52 @@
 #include <iostream>
 #include <map>
 #include <unistd.h>
+#include <limits.h>
+
+struct pairIntchar{
+  int i = INT_MAX;
+  char c = '?';
+
+  operator char&() { return c; }
+  operator int&() { return i; }
+
+  void operator= (char _c){ c = _c; }
+  bool operator== (char _c) {return c == _c ;}
+
+  void operator++ (){
+    i++;
+  }
+
+};
+
+struct mapOfChar {
+  map < int , map <int, pairIntchar> > m;
+  int cont = 0;
+
+public:
+  void insert (int x, int y, char c){
+    m[x][y] = c;
+  }
+
+  void count( int f, int c){
+    m[f][c].i = cont;
+    cout << cont << endl;
+    cont++;
+  }
+
+  friend ostream& operator<< (ostream& os, mapOfChar& m){
+    for(auto it: m.m){
+      int row = it.first;
+      for (auto it2 : it.second){
+        int col = it2.first;
+        cout << "Fila: " << row << " columna: " << col << " " << static_cast<char>(it2.second) << endl;
+      }
+    }
+    return os;
+  }
+
+
+};
 
 
 struct estado {
@@ -33,7 +79,7 @@ struct estado {
 
 struct nodeestado {
   estado a;
-  estado * father;
+  estado *father;
 };
 
 struct node {
@@ -50,7 +96,7 @@ class ComportamientoJugador : public Comportamiento {
  public:
     ComportamientoJugador(unsigned int size) : Comportamiento(size) {
       // Inicializar Variables de Estado
-      fil = col = 99;
+      fil = col = -1;
       brujula = 0; // 0: Norte, 1:Este, 2:Sur, 3:Oeste
       destino.fila = -1;
       destino.columna = -1;
@@ -58,7 +104,7 @@ class ComportamientoJugador : public Comportamiento {
     }
     ComportamientoJugador(std::vector< std::vector< unsigned char> > mapaR) : Comportamiento(mapaR) {
       // Inicializar Variables de Estado
-      fil = col = 99;
+      fil = col = -1;
       brujula = 0; // 0: Norte, 1:Este, 2:Sur, 3:Oeste
       destino.fila = -1;
       destino.columna = -1;
@@ -74,26 +120,31 @@ class ComportamientoJugador : public Comportamiento {
 private:
   // Declarar Variables de Estado
   int fil, col, brujula;
-  estado destino;
+  estado destino= {-1, -1, -1};
   list<Action> plan;
-  unsigned char knownMapC[200][200];
-  int knownMapI [200][200];
-  int filaR = 100, colR = 100;
-
-  bool firstTime = true;
 
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
   //bool isPath(unsigned char c);
 
-  estado addToKnownMap(Sensores sensores);
+  void copyInMap(Sensores sensores);
+  template <class T> void saveVisibleMap(Sensores s, T& m);
   //int lookForPK(Sensores sensores);
-  void nextStep();
   void valueToMap(int fila, int col, char c, estado& ret);
   void goToPK( estado k);
-
+  bool isDestination( estado a);
   //bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
 
+
+  void RandomBehaviour(mapOfChar& m);
+  bool inicializeCoordenates(Sensores s, bool a);
+  bool objetiveHaschanged(estado objetive, Sensores s);
+  bool canSeeK(Sensores s, estado& k, mapOfChar& m);
+  bool thereIsPathForK(estado k, mapOfChar& m);
+  estado interpretVision ( int x, mapOfChar& m);
+  void copyKnownMap(mapOfChar& m, Sensores s);
+  void heuristicBehaviour (Sensores s, bool reset);
+  estado closestKnown(Sensores s, estado a);
 };
 
 #endif
