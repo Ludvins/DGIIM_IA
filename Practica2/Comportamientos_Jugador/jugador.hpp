@@ -15,6 +15,8 @@
 #include <set>
 #include <memory>
 
+
+
 struct pairIntchar{
   int i = 0;
   char c = '?';
@@ -130,16 +132,8 @@ private:
 
   bool pathFinding(const estado &origen, const estado &destino, list<Action> &plan);
   void PintaPlan(list<Action> plan);
-  //bool isPath(unsigned char c);
 
-  void copyInMap(Sensores sensores);
   template <class T> void saveVisibleMap(Sensores s, T& m);
-  //int lookForPK(Sensores sensores);
-  void valueToMap(int fila, int col, char c, estado& ret);
-  void goToPK( estado k);
-  bool isDestination( estado a);
-  //bool reconstructPath(const map <estado, estado, estadocomp>& cameFrom,const estado& current);
-
 
   void RandomBehaviour(mapOfChar& m);
   bool inicializeCoordenates(Sensores s, bool a);
@@ -149,7 +143,6 @@ private:
   estado interpretVision ( int x, mapOfChar& m);
   void copyKnownMap(mapOfChar& m, Sensores s);
   void heuristicBehaviour (Sensores s, bool reset);
-  estado closestKnown(Sensores s, estado a);
 };
 
 #endif
