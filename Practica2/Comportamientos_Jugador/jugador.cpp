@@ -608,7 +608,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 
   if (objetiveHaschanged(destino, sensores)){
-    cout << "[Think]: El objetivo ha cambiad, vaciando plan..." << endl;
+    cout << "[Think]: El objetivo ha cambiado, vaciando plan..." << endl;
     plan.clear();
     state = KNOWINGCOORDENATES;
     destino = {sensores.destinoF, sensores.destinoC, 0};
@@ -654,11 +654,11 @@ Action ComportamientoJugador::think(Sensores sensores) {
         case KNOWINGCOORDENATES:
 
           if(a_star_algorithm <> ({fil, col, brujula}, destino, plan, mapaResultado, true)){
-            //cout << "[Think]: Hay un camino hacia el objetivo" << endl;
+            cout << "[Think]: Hay un camino hacia el objetivo" << endl;
             break;
           }
           state = LOOKINGFOROBJETIVE;
-          //cout << "No hay camino al objetivo." << endl;
+          cout << "No hay camino al objetivo." << endl;
 
         case LOOKINGFOROBJETIVE:
           state = KNOWINGCOORDENATES;
@@ -666,7 +666,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
         case KNOWEXACTCOORDENATESANDMAP:
 
-          cout << "[Think]: Fila inicial: " << fil << "\ncolumna inicial: "<< col  << "\nbrujula: "<< brujula << endl;
+          cout << "[Think]: Fila inicial: " << fil << "\[Think]: Columna inicial: "<< col  << "\n[Think]: Brujula: "<< brujula << endl;
           cout << "[Think]: Destino " << sensores.destinoF << " " << sensores.destinoC << endl;
           cout << "[Think]: Entra funcion pathfinding" << endl;
           estado orig = {fil, col, brujula};
