@@ -11,13 +11,51 @@
 #include <sstream>
 #include <string>
 #include <limits.h>
+#include <cstdlib>
+#include <cmath>
+#include <list>
 
 #ifndef MANUPCBOT_H_
 #define MANUPCBOT_H_
 
 
-class hash_game_state {
+using depth = int;
+using bound = int;
 
+
+class GameNode {
+  GameState game;
+  Move reach_this_node;
+  bool maximize;
+  bool is_root;
+
+ public:
+  using action = Move;
+
+  GameNode (GameState gs, Move _reach_this_node, bool _maximize);
+  bound get_heuristic_value();
+  action get_action();
+  bool is_terminal();
+  bool is_max_node();
+  GameState& get_game_state();
+  list <GameNode> get_children();
+  friend ostream& operator<< (ostream& os, GameNode gn);
+
+};
+
+template <class node>
+struct bound_and_action {
+
+  bound _bound;
+  typename node::action _action;
+
+  bool operator< (bound_and_action lhs) const {
+    return _bound < lhs._bound;
+  }
+};
+
+
+class hash_game_state {
  public:
   size_t operator() (const GameState& state) const {
     string s;
@@ -49,9 +87,9 @@ struct lower_and_upper_bound{
 
 class MyBot:Bot {
 
-  //std::unordered_map <GameState, int, hash_game_state> partition_table;
-  std::unordered_map <GameState, lower_and_upper_bound, hash_game_state> partition_table;
-public:
+  std::unordered_map <GameState, lower_and_upper_bound, hash_game_state> transposition_table;
+
+ public:
 	MyBot();
 	~MyBot();
 

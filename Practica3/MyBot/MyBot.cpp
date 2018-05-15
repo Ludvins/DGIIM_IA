@@ -5,17 +5,16 @@
  *      Author: Ludvins
  */
 
-#include <string>
-#include <cstdlib>
-#include <iostream>
-#include <limits.h>
-#include <cmath>
-#include <list>
 
 #include "MyBot.h"
 using namespace std;
 
 bool debug = false;
+
+
+// --------------------------------------------- GameState Equality Operator ----------------------------------
+
+
 
 bool operator== (const GameState& rhs, const GameState& lhs) {
   return rhs.getSeedsAt(J1, GRANERO) == lhs.getSeedsAt(J1, GRANERO) &&
@@ -34,260 +33,106 @@ bool operator== (const GameState& rhs, const GameState& lhs) {
     rhs.getSeedsAt(J2, P6) == lhs.getSeedsAt(J2, P6);
 }
 
-MyBot::MyBot() {
-	// Inicializar las variables necesarias para ejecutar la partida
+// --------------------------------------------------------------------------------------------------------
+// -------------------------------------------- Node Class implementation ---------------------------------
+// --------------------------------------------------------------------------------------------------------
 
-}
+// This class is needed for MTD-f and AlphaBeta with memory algorithms.
 
-MyBot::~MyBot() {
-	// Liberar los recursos reservados (memoria, ficheros, etc.)
-}
-
-void MyBot::initialize() {
-	// Inicializar el bot antes de jugar una partida
-}
-
-string MyBot::getName() {
-	return "MyBot"; // Sustituir por el nombre del bot
-}
-
-using depth = int;
-using bound = int;
-
-
-class GameNode{
-
-  GameState game;
-  Move reach_this_node;
-  bool maximize;
-  bool is_root;
-
-public:
-
-  using action = Move;
-
-  GameNode(GameState gs, Move _reach_this_node, bool _maximize, bool _is_root){
+GameNode::GameNode(GameState gs, Move _reach_this_node, bool _maximize){
     game = gs;
     reach_this_node = _reach_this_node;
     maximize = _maximize;
-    is_root = _is_root;
-  }
+}
 
   bound
-  get_heuristic_value(){
+  GameNode::get_heuristic_value(){
     return game.getScore(J1) - game.getScore(J2);
   }
 
-  action
-  get_action(){
+GameNode::action
+  GameNode::get_action(){
     return reach_this_node;
   }
 
   bool
-  is_terminal(){
+  GameNode::is_terminal(){
     return game.isFinalState();
   }
 
   bool
-  is_max_node(){
+  GameNode::is_max_node(){
     return maximize;
   }
 
   GameState&
-  get_game_state(){
+  GameNode::get_game_state(){
     return game;
   }
 
   bool
-  is_root_node(){
-    return is_root;
+  GameNode::is_root_node(){
+    return reach_this_node == 0;
   }
-  list < pair<GameNode,action> >
-  get_children(){
 
-    list< pair<GameNode, action> > children;
+list <GameNode>
+GameNode::get_children(){
+
+    list< GameNode > children;
 
     for(int id = 1; id <= 6; id++){
 
       GameState gs = game.simulateMove ( (Move) id);
       bool child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ? maximize : !maximize;
-      GameNode child = GameNode (gs, (Move) id,  child_maximize, false);
-      children.push_back( make_pair(child, (Move) id ) );
+      GameNode child = GameNode (gs, (Move) id,  child_maximize);
+      children.push_back( child );
     }
 
     return children;
   }
 
-  friend ostream&
+  ostream&
   operator<< (ostream& os, GameNode gn){
     os << "\tJ1: Granero="<< (int) gn.game.getSeedsAt(J1, GRANERO) << " C1=" << (int)gn.game.getSeedsAt(J1,P1) << " C2=" << (int)gn.game.getSeedsAt(J1,P2) << " C3=" << (int)gn.game.getSeedsAt(J1,P3) << " C4=" <<(int) gn.game.getSeedsAt(J1,P4) << " C5=" << (int) gn.game.getSeedsAt(J1,P5) << " C6=" <<(int) gn.game.getSeedsAt(J1,P6) << endl;
     os << "\tJ2: Granero="<< (int)gn.game.getSeedsAt(J2, GRANERO) << " C1=" << (int)gn.game.getSeedsAt(J2,P1) << " C2=" << (int)gn.game.getSeedsAt(J2,P2) << " C3=" << (int) gn.game.getSeedsAt(J2,P3) << " C4=" << (int)gn.game.getSeedsAt(J2,P4) << " C5=" << (int)gn.game.getSeedsAt(J2,P5) << " C6=" << (int)gn.game.getSeedsAt(J2,P6) << endl;
     return os;
   }
 
-};
+// -------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------- ALPHA BETA WITH MEMORY ---------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
 
+// This algorithm is used on a Node Class which encapsulates a game board. Several methos are needed in this Node Class.
+//
+// 1. get_heuristic_value()    Must return the heuristic value of that node (leaf node).
+// 1. is_terminal()        Must return if the node is a leaf node.
+// 3. get_action()         Must return the action that reached that node from its father.
+// 4. get_children()       Must return a list of the child nodes of the current one.
+// 5. is_max_node()        Must return if the node is a node to maximize o minimize (following a monimax algorithm).
+// 6. get_game_state()     Must return the game the node is encapsulating.
+//
 
+// This algorithm algo needs a transposition table to be called over the game the node is encapsulating.
+// So the key of the table is a game state and the return value must be a pair of lower and upper bounds.
 
-template <class node>
-struct bound_and_action {
-
-  bound _bound;
-  typename node::action _action;
-
-  bool operator< (bound_and_action lhs) const {
-    return _bound < lhs._bound;
-  }
-
-};
-
-
-template <class node>
-bound_and_action<node> alpha_beta(node root, depth depth, bound alpha, bound beta){
-
-  if(debug)
-    cerr << "[AlphaBeta]: Entra algoritmo,  con profundidad " << depth << " y maximize " << root.is_max_node() <<  endl;
-  if(debug)
-    cerr << root;
-
-  if ( depth == 0 || root.is_terminal() )
-    {
-      bound_and_action<node> ret = {root.get_heuristic_value(), root.get_action()};
-      if (debug)
-        cerr << "[AlphaBeta]: Nodo Hoja, devuelve valor: " << ret._bound << " " << ret._action << endl;
-      return ret;
-    }
-
-  auto children = root.get_children();
-
-  bound_and_action<node> ret;
-
-  if (root.is_max_node()){
-    ret._bound = INT_MIN;
-
-    for (auto child : children){
-      bound_and_action<node> possible_ret = alpha_beta (child.first, depth - 1, alpha, beta);
-
-      if (possible_ret._bound > ret._bound){
-        ret._bound = possible_ret._bound;
-        ret._action = child.first.get_action();
-      }
-
-      alpha = std::max(alpha, ret._bound);
-      if ( beta <= alpha )
-        break; // beta cut-off
-    }
-
-  } else { // if (min_node)
-    ret._bound = INT_MAX;
-
-    for (auto child : children){
-      bound_and_action <node> possible_ret = alpha_beta (child.first, depth - 1, alpha, beta);
-
-      if (possible_ret._bound < ret._bound) {
-        ret._bound = possible_ret._bound;
-        ret._action = child.first.get_action();
-      }
-
-      beta = std::min(beta, ret._bound);
-      if ( beta <= alpha )
-        break; // alpha cut-off
-    }
-  }
-
-  if (debug)
-    cerr << "[AlphaBeta]: Devuelve Valor: " << ret._bound << " " << ret._action << endl;
-
-  return ret;
-}
 
 
   template <class node, class transposition_table>
   bound_and_action<node> alpha_beta_with_memory(node root, depth depth, bound alpha, bound beta, transposition_table& table){
 
-    //for (auto it : table){
-    //  cerr << it.second << endl;
-    //}
-    if(debug)
-      cerr << "[AlphaBeta]: Entra algoritmo,  con profundidad " << depth << " y maximize " << root.is_max_node() <<  endl;
-    if(debug)
-      cerr << root;
-
-    //cerr << root.is_root_node()<< endl;
-    auto bound_in_hash = table.find(root.get_game_state());
-    if(!root.is_root_node() && bound_in_hash != table.end()){
-      if(debug)
-        cerr << "Nodo encontrado en tabla " << bound_in_hash->second << endl;
-      return {bound_in_hash->second, root.get_action()};
-    }
-
-    if ( depth == 0 || root.is_terminal() )
-      {
-      bound_and_action<node> ret = {root.get_heuristic_value(), root.get_action()};
-      if (debug)
-        cerr << "[AlphaBeta]: Nodo Hoja, devuelve valor: " << ret._bound << " " << ret._action << endl;
-      return ret;
-      }
-
-    auto children = root.get_children();
-
-    bound_and_action<node> ret;
-
-    if (root.is_max_node()){
-      ret._bound = INT_MIN;
-
-      for (auto child : children){
-        bound_and_action<node> possible_ret = alpha_beta_with_memory (child.first, depth - 1, alpha, beta, table);
-
-        if (possible_ret._bound > ret._bound){
-          ret._bound = possible_ret._bound;
-          ret._action = child.first.get_action();
-        }
-
-        alpha = std::max(alpha, ret._bound);
-        if ( beta <= alpha )
-          break; // beta cut-off
-      }
-
-    } else { // if (min_node)
-      ret._bound = INT_MAX;
-
-      for (auto child : children){
-        bound_and_action <node> possible_ret = alpha_beta_with_memory (child.first, depth - 1, alpha, beta, table);
-
-        if (possible_ret._bound < ret._bound) {
-          ret._bound = possible_ret._bound;
-          ret._action = child.first.get_action();
-        }
-
-        beta = std::min(beta, ret._bound);
-        if ( beta <= alpha )
-          break; // alpha cut-off
-      }
-    }
-
     if (debug)
-      cerr << "[AlphaBeta]: Devuelve Valor: " << ret._bound << " " << ret._action << endl;
-    table[root.get_game_state()] = ret._bound;
-    return ret;
-  }
-
-  template <class node, class transposition_table>
-  bound_and_action<node> alpha_beta_with_memory2(node root, depth depth, bound alpha, bound beta, transposition_table& table){
-
-    //for (auto it : table){
-    //  cerr << it.second << endl;
-    //}
+      for (auto it : table)
+        cerr << it.second.lower << " " <<it.second.upper  << endl;
     if(debug)
       cerr << "[AlphaBeta]: Entra algoritmo,  con profundidad " << depth << " y maximize " << root.is_max_node() <<  endl;
     if(debug)
       cerr << root;
 
-    //cerr << root.is_root_node()<< endl;
     auto value_in_hash = table.find(root.get_game_state());
+
     if (debug)
       cerr << "Nodo buscado" << endl;
-    if(!root.is_root_node() && value_in_hash != table.end()){
+    if(value_in_hash != table.end()){
       if (debug)
         cerr << "Nodo encontrado" << endl;
       auto bound_in_hash = value_in_hash->second;
@@ -324,11 +169,11 @@ bound_and_action<node> alpha_beta(node root, depth depth, bound alpha, bound bet
         if ( beta <= ret._bound )
           break; // beta cut-off
 
-        bound_and_action<node> possible_ret = alpha_beta_with_memory2 (child.first, depth - 1, a, beta, table);
+        bound_and_action<node> possible_ret = alpha_beta_with_memory(child, depth - 1, a, beta, table);
 
         if (possible_ret._bound > ret._bound){
           ret._bound = possible_ret._bound;
-          ret._action = child.first.get_action();
+          ret._action = child.get_action();
         }
         a = std::max(a, ret._bound);
 
@@ -343,11 +188,11 @@ bound_and_action<node> alpha_beta(node root, depth depth, bound alpha, bound bet
         if ( ret._bound <= alpha )
           break; // alpha cut-off
 
-        bound_and_action <node> possible_ret = alpha_beta_with_memory2 (child.first, depth - 1, alpha, beta, table);
+        bound_and_action <node> possible_ret = alpha_beta_with_memory(child, depth - 1, alpha, beta, table);
 
         if (possible_ret._bound < ret._bound) {
           ret._bound = possible_ret._bound;
-          ret._action = child.first.get_action();
+          ret._action = child.get_action();
         }
 
         b = std::min(b, ret._bound);
@@ -366,6 +211,14 @@ bound_and_action<node> alpha_beta(node root, depth depth, bound alpha, bound bet
     return ret;
   }
 
+// ----------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------- MTD-f ----------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------
+
+// This is the main algorithm of the program, it calls alpha_beta_with_memory several times so it gets the best
+// minimax value.
+// Memory is needed so the algorithm doesn't take too long (as it explores the same tree a few times on each call).
+//
 
 template <class node, class transposition_table>
 bound_and_action <node> MTDF (node root, bound first, depth d, transposition_table& table){
@@ -386,8 +239,7 @@ bound_and_action <node> MTDF (node root, bound first, depth d, transposition_tab
 
     beta = (ret._bound == lower) ? ret._bound + 1 : ret._bound;
 
-    ret = alpha_beta_with_memory2(root, d, beta - 1, beta, table);
-    //ret = alpha_beta( root, d, beta - 1, beta);
+    ret = alpha_beta_with_memory(root, d, beta - 1, beta, table);
 
     ret._bound < beta ? upper = ret._bound : lower = ret._bound;
     cont ++;
@@ -403,17 +255,27 @@ bound_and_action <node> MTDF (node root, bound first, depth d, transposition_tab
 
 }
 
-// int get_hash_value(const GameState& state){
-//   ostringstream oss;
-//   int c;
-//   oss << (int)state.getSeedsAt(J1, GRANERO) << (int)state.getSeedsAt(J1, P1) << (int)state.getSeedsAt(J1, P2) << (int)state.getSeedsAt(J1, P3) << (int)state.getSeedsAt(J1, P4) << (int)state.getSeedsAt(J1, P5) << (int)state.getSeedsAt(J1, P6) << (int)state.getSeedsAt(J2, GRANERO) << (int)state.getSeedsAt(J2, P1) << (int)state.getSeedsAt(J2, P2) << (int)state.getSeedsAt(J2, P3) << (int)state.getSeedsAt(J2, P4) << (int)state.getSeedsAt(J2, P5) << (int)state.getSeedsAt(J2,P6);
+// ------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------- MyBot Methods ----------------------------------------------
+// ------------------------------------------------------------------------------------------------------------
 
-//   istringstream iss(oss.str());
-//   iss >> c;
-//   cerr << c << endl;
-//   return c;
-// }
 
+MyBot::MyBot() {
+	// Inicializar las variables necesarias para ejecutar la partida
+
+}
+
+MyBot::~MyBot() {
+	// Liberar los recursos reservados (memoria, ficheros, etc.)
+}
+
+void MyBot::initialize() {
+	// Inicializar el bot antes de jugar una partida
+}
+
+string MyBot::getName() {
+	return "MyBot"; // Sustituir por el nombre del bot
+}
 
  Move MyBot::nextMove(const vector<Move> &adversary, const GameState &state) {
 
@@ -437,8 +299,8 @@ bound_and_action <node> MTDF (node root, bound first, depth d, transposition_tab
 	// devuelto por el método getName() acordemente.
 
   bool im_first_player = turno == J1;
-  bound b = im_first_player ? 7 : 8;
-  GameNode node (state, M_NONE, im_first_player, true);
+
+  GameNode node (state, M_NONE, im_first_player);
 
    // int firstguess = 0;
    //  for (int d = 0; d < 30; d++){
@@ -446,7 +308,7 @@ bound_and_action <node> MTDF (node root, bound first, depth d, transposition_tab
    //    cerr << firstguess << endl;
    // }
 
-  bound_and_action <GameNode> b_and_m = MTDF (node, 8, 9, partition_table);
+  bound_and_action <GameNode> b_and_m = MTDF (node, 8, 9, transposition_table);
 
   movimiento = b_and_m._action;
 
