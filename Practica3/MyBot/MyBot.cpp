@@ -45,13 +45,13 @@ GameNode::GameNode(GameState gs, Move _reach_this_node, bool _maximize){
     maximize = _maximize;
 }
 
-  bound
-  GameNode::get_heuristic_value(){
-    return game.getScore(J1) - game.getScore(J2);
-  }
+bound
+GameNode::get_heuristic_value(){
+  return game.getScore(J1) - game.getScore(J2);
+}
 
 GameNode::action
-  GameNode::get_action(){
+GameNode::get_action(){
     return reach_this_node;
   }
 
@@ -70,10 +70,6 @@ GameNode::action
     return game;
   }
 
-  bool
-  GameNode::is_root_node(){
-    return reach_this_node == 0;
-  }
 
 list <GameNode>
 GameNode::get_children(){
