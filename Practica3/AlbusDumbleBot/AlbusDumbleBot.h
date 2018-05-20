@@ -15,30 +15,37 @@
 #include <cstdlib>
 #include <cmath>
 #include <list>
+#include <chrono>
+#include <fstream>
 
 #ifndef ALBUSDUMBLEBOT_H_
 #define ALBUSDUMBLEBOT_H_
 
 
 using depth = int;
-using bound = int;
-
+using bound = double;
 
 class GameNode
 {
     GameState game;
     Move reach_this_node;
-    bool maximize;
+    bool is_a_max_node;
+    bool is_a_root_node;
 
   public:
     using action = Move;
+    static int heuristic_to_use;
 
-    GameNode (GameState gs, Move _reach_this_node, bool _maximize);
+    GameNode (GameState gs, Move _reach_this_node, bool _maximize, bool _is_root_node = false);
     bound get_heuristic_value();
     action get_action();
     bool is_terminal();
+  bool is_root_node();
     bool is_max_node();
-    GameState& get_game_state();
+    GameState& get_game_state() ;
+    const GameState& get_game_state_const() const;
+
+    bool operator== (const GameNode& lhsn) const;
     void get_children(list<GameNode>& children);
     friend ostream& operator<< (ostream& os, GameNode gn);
 
@@ -57,22 +64,19 @@ struct bound_and_action {
 };
 
 
-class hash_game_state
+class hash_game
 {
   public:
-  size_t operator() (const GameState& state) const;
+    size_t operator() (const GameNode& node) const;
 };
 
 struct lower_and_upper_bound {
-    int lower = INT_MIN;
-    int upper = INT_MAX;
+    bound lower = INT_MIN;
+    bound upper = INT_MAX;
 };
 
 class AlbusDumbleBot: Bot
 {
-
-    std::unordered_map <GameState, lower_and_upper_bound, hash_game_state>
-    transposition_table;
 
   public:
     AlbusDumbleBot();
