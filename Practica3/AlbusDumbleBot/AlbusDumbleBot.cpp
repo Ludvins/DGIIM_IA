@@ -39,6 +39,25 @@ bool GameNode::is_root_node(){
   return is_a_root_node;
 }
 
+bool GameNode::is_better_than(GameNode& other){
+
+  if (!other.is_a_max_node && is_a_max_node)
+    return true;
+  if (!is_a_max_node && other.is_a_max_node)
+    return false;
+
+  // int sumaa = game.getSeedsAt(J1, P1) + game.getSeedsAt(J1, P2) + game.getSeedsAt(J1, P3) + game.getSeedsAt(J1, P4) + game.getSeedsAt(J1, P5) + game.getSeedsAt(J1, P6) + game.getSeedsAt(J2, P1) + game.getSeedsAt(J2, P2) + game.getSeedsAt(J2, P3) + game.getSeedsAt(J2, P4) + game.getSeedsAt(J2, P5) + game.getSeedsAt(J2, P6);
+
+  // GameState game2 = other.get_game_state();
+  // int sumab = game2.getSeedsAt(J1, P1) + game2.getSeedsAt(J1, P2) + game2.getSeedsAt(J1, P3) + game2.getSeedsAt(J1, P4) + game2.getSeedsAt(J1, P5) + game2.getSeedsAt(J1, P6) + game2.getSeedsAt(J2, P1) + game2.getSeedsAt(J2, P2) + game2.getSeedsAt(J2, P3) + game2.getSeedsAt(J2, P4) + game2.getSeedsAt(J2, P5) + game2.getSeedsAt(J2, P6);
+
+  //if (sumaa < sumab) return true;
+
+
+  return false;
+
+}
+
 int  GameNode::heuristic_to_use = 1; // Default heuristic
 
 bound GameNode::get_heuristic_value()
@@ -192,9 +211,9 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
         bound alpha, bound beta, transposition_table& table)
 {
 
-    auto value_in_hash = table.find(root);
+  auto value_in_hash = table.find(root);
 
-    if (value_in_hash != table.end()) { // Transposition table lookup
+    if (value_in_hash != table.end() && value_in_hash->second.d >= depth) { // Transposition table lookup
 
         auto bound_in_hash = value_in_hash->second;
 
@@ -220,6 +239,7 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
         list<node> children;
         root.get_children(children);
 
+        GameNode bestchild = *(children.begin());
         if (root.is_max_node()) {
 
             ret._bound = INT_MIN;
@@ -234,9 +254,10 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
                 bound_and_action<node> possible_ret = alpha_beta_with_memory(child, depth - 1,
                                                       a, beta, table);
 
-                if (possible_ret._bound > ret._bound) {
+                if (possible_ret._bound > ret._bound || (possible_ret._bound == ret._bound && child.is_better_than(bestchild)) ) {
                     ret._bound = possible_ret._bound;
                     ret._action = child.get_action();
+                    bestchild = child;
                 }
 
                 a = std::max(a, ret._bound);
@@ -248,6 +269,7 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
             ret._bound = INT_MAX;
             bound b = beta; //Save original beta
 
+
             for (auto child : children) {
 
                 if ( ret._bound <= alpha ) {
@@ -257,7 +279,7 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
                 bound_and_action <node> possible_ret = alpha_beta_with_memory(child, depth - 1,
                                                        alpha, b, table);
 
-                if (possible_ret._bound < ret._bound) {
+                if (possible_ret._bound < ret._bound || (possible_ret._bound == ret._bound && child.is_better_than(bestchild))) {
                     ret._bound = possible_ret._bound;
                     ret._action = child.get_action();
                 }
@@ -271,21 +293,23 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     //
     //  ----- Transposition table storing of bounds.
     // Fail low result implies an upper bound.
+    bounds_and_depth& ref = table[root];
+
     if (ret._bound <= alpha) {
-        table[root].upper = ret._bound;
+      ref.upper = ret._bound;
     }
 
     // Found an accurate minimax value - this will not ocurr if called with zero window.
     if (ret._bound > alpha && ret._bound < beta) {
-        lower_and_upper_bound value_to_save;
-        value_to_save.lower = value_to_save.upper = ret._bound;
-        table[root] = value_to_save;
+        ref.upper = ref.lower=  ret._bound;
     }
 
     // Fail high result implies a lower bound.
     if (ret._bound >= beta ) {
-        table[root].lower = ret._bound;
+        ref.lower = ret._bound;
     }
+
+    ref.d = depth;
 
     return ret;
 }
@@ -303,7 +327,7 @@ template <class node>
 bound_and_action <node> MTDF (node& root, bound first, depth d)
 {
 
-    std::unordered_map <node, lower_and_upper_bound, hash_game> transposition_table;
+    std::unordered_map <node, bounds_and_depth, hash_game> transposition_table;
     bound_and_action <node> ret;
     ret._bound = first;
 
@@ -400,7 +424,7 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
 
     // Iterative Deeping
 
-    for (depth it = 10; time_span.count() < 1 && it < 50; it++){
+    for (depth it = 1; time_span.count() < 1 && it < 50; it++){
       //cerr << "Profundidad: "<< it << " con tiempo: " << time_span.count() << endl;
       b_and_m = MTDF (node, firstguess, it);
       end = chrono::high_resolution_clock::now();

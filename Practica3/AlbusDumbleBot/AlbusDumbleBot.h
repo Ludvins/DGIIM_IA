@@ -31,6 +31,7 @@ class GameNode
     Move reach_this_node;
     bool is_a_max_node;
     bool is_a_root_node;
+    string hash_aux;
 
   public:
     using action = Move;
@@ -42,6 +43,7 @@ class GameNode
     bool is_terminal();
   bool is_root_node();
     bool is_max_node();
+  bool is_better_than(GameNode& other);
     GameState& get_game_state() ;
     const GameState& get_game_state_const() const;
 
@@ -70,9 +72,10 @@ class hash_game
     size_t operator() (const GameNode& node) const;
 };
 
-struct lower_and_upper_bound {
+struct bounds_and_depth {
     bound lower = INT_MIN;
     bound upper = INT_MAX;
+    depth d = INT_MAX;
 };
 
 class AlbusDumbleBot: Bot
