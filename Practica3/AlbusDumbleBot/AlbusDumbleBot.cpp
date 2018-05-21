@@ -400,6 +400,13 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
         GameNode::heuristic_to_use = 2 ;
     }
 
+
+    static int cont = 0;
+    cont++;
+    cerr << cont << endl;
+    if (cont == 1 && im_first_player)
+      return (Move) 1;
+
     // if(im_first_player)
     //   GameNode::heuristic_to_use = 3;
     // else
@@ -449,7 +456,6 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
 
     next_move = b_and_m._action;
     //firstguess = b_and_m._bound;
-    
 
     return next_move;
 }
