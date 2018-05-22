@@ -72,10 +72,11 @@ class hash_game
     size_t operator() (const GameNode& node) const;
 };
 
-struct bounds_and_depth {
-    bound lower = INT_MIN;
-    bound upper = INT_MAX;
-    depth d = INT_MAX;
+struct hash_struct {
+    bound _lower = INT_MIN;
+    bound _upper = INT_MAX;
+    depth _depth = INT_MAX;
+    GameNode::action _action;
 };
 
 class AlbusDumbleBot: Bot

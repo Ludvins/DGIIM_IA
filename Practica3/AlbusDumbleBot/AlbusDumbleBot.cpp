@@ -220,19 +220,19 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     auto value_in_hash = table.find(root);
 
     if (value_in_hash != table.end()
-            && value_in_hash->second.d >= depth) { // Transposition table lookup
+            && value_in_hash->second._depth >= depth) { // Transposition table lookup
 
         auto bound_in_hash = value_in_hash->second;
 
-        if (bound_in_hash.lower >= beta)
-            return {bound_in_hash.lower, root.get_action()};
+        if (bound_in_hash._lower >= beta)
+            return {bound_in_hash._lower, bound_in_hash._action};
 
-        if (bound_in_hash.upper <= alpha)
-            return {bound_in_hash.upper, root.get_action()};
+        if (bound_in_hash._upper <= alpha)
+            return {bound_in_hash._upper, bound_in_hash._action};
 
-        alpha = std::max(alpha, bound_in_hash.lower);
+        alpha = std::max(alpha, bound_in_hash._lower);
 
-        beta = std::min(beta, bound_in_hash.upper);
+        beta = std::min(beta, bound_in_hash._upper);
     }
 
     bound_and_action<node> ret;
@@ -303,24 +303,24 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     //
     //  ----- Transposition table storing of bounds.
     // Fail low result implies an upper bound.
-    bounds_and_depth& ref = table[root];
+    hash_struct& hash_value = table[root];
 
     if (ret._bound <= alpha) {
-        ref.upper = ret._bound;
+        hash_value._upper = ret._bound;
     }
 
     // Found an accurate minimax value - this will not ocurr if called with zero window.
     if (ret._bound > alpha && ret._bound < beta) {
-        ref.upper = ref.lower =  ret._bound;
+        hash_value._upper = hash_value._lower =  ret._bound;
     }
 
     // Fail high result implies a lower bound.
     if (ret._bound >= beta ) {
-        ref.lower = ret._bound;
+        hash_value._lower = ret._bound;
     }
 
-    ref.d = depth;
-
+    hash_value._depth = depth;
+    hash_value._action = ret._action;
     return ret;
 }
 
@@ -337,7 +337,7 @@ template <class node>
 bound_and_action <node> MTDF (node& root, bound first, depth d)
 {
 
-    std::unordered_map <node, bounds_and_depth, hash_game> transposition_table;
+    std::unordered_map <node, hash_struct, hash_game> transposition_table;
     bound_and_action <node> ret;
     ret._bound = first;
 
@@ -443,21 +443,27 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
 
 
     // Iterative Deeping
-    int loopcont = 1;
+
     for (depth it = 1; time_span.count() < 1 && it < 50; it++) {
-      bound aux = b_and_m._action;
+        static int same_move_cont = 1;
+        bound aux = b_and_m._action;
         b_and_m = MTDF (node, firstguess, it);
-        if (aux == b_and_m._action){
-          if(loopcont == 5) break;
-          loopcont++;
+
+        if (aux == b_and_m._action) {
+            if (same_move_cont == 5) {
+                break;
+            }
+
+            same_move_cont++;
+        } else {
+            same_move_cont = 1;
         }
-        else
-          loopcont = 1;
+
         end = chrono::high_resolution_clock::now();
         time_span = chrono::duration_cast <chrono::duration<double>> (end - begin);
         //cerr << b_and_m._action << " " << time_span.count() << endl;
-        cerr << "Profundidad: "<< it << " con tiempo: " << time_span.count() << " Bound: " << b_and_m._bound << " " << b_and_m._action << endl;
-        cerr << loopcont << endl;
+        cerr << "[Iterative Deeping]: Depth: " << it << "\nAcumulative time: " << time_span.count() <<
+             "\nBound: " << b_and_m._bound << "\nAction: " << b_and_m._action << endl;
     }
 
     // FirstGuess
@@ -473,7 +479,7 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
     end = chrono::high_resolution_clock::now();
     time_span = chrono::duration_cast<chrono::duration<double>>( end - begin);
 
-    cerr << "Tiempo del movimiento: " << time_span.count() << endl;
+    cerr << "Total time spent on the move: " << time_span.count() << endl;
 
     next_move = b_and_m._action;
     //firstguess = b_and_m._bound;
