@@ -17,7 +17,8 @@ using namespace std;
 
 // This class is needed for MTD-f and AlphaBeta with memory algorithms.
 
-GameNode::GameNode(GameState gs, Move _reach_this_node, bool _maximize, bool _is_root_node )
+GameNode::GameNode(GameState gs, Move _reach_this_node, bool _maximize,
+                   bool _is_root_node )
 {
     game = gs;
     reach_this_node = _reach_this_node;
@@ -35,26 +36,31 @@ bool GameNode::is_terminal()
     return game.isFinalState();
 }
 
-bool GameNode::is_root_node(){
-  return is_a_root_node;
+bool GameNode::is_root_node()
+{
+    return is_a_root_node;
 }
 
-bool GameNode::is_better_than(GameNode& other){
+bool GameNode::is_better_than(GameNode& other)
+{
 
-  if (!other.is_a_max_node && is_a_max_node)
-    return true;
-  if (!is_a_max_node && other.is_a_max_node)
+    if (!other.is_a_max_node && is_a_max_node) {
+        return true;
+    }
+
+    if (!is_a_max_node && other.is_a_max_node) {
+        return false;
+    }
+
+    // int sumaa = game.getSeedsAt(J1, P1) + game.getSeedsAt(J1, P2) + game.getSeedsAt(J1, P3) + game.getSeedsAt(J1, P4) + game.getSeedsAt(J1, P5) + game.getSeedsAt(J1, P6) + game.getSeedsAt(J2, P1) + game.getSeedsAt(J2, P2) + game.getSeedsAt(J2, P3) + game.getSeedsAt(J2, P4) + game.getSeedsAt(J2, P5) + game.getSeedsAt(J2, P6);
+
+    // GameState game2 = other.get_game_state();
+    // int sumab = game2.getSeedsAt(J1, P1) + game2.getSeedsAt(J1, P2) + game2.getSeedsAt(J1, P3) + game2.getSeedsAt(J1, P4) + game2.getSeedsAt(J1, P5) + game2.getSeedsAt(J1, P6) + game2.getSeedsAt(J2, P1) + game2.getSeedsAt(J2, P2) + game2.getSeedsAt(J2, P3) + game2.getSeedsAt(J2, P4) + game2.getSeedsAt(J2, P5) + game2.getSeedsAt(J2, P6);
+
+    //if (sumaa < sumab) return true;
+
+
     return false;
-
-  // int sumaa = game.getSeedsAt(J1, P1) + game.getSeedsAt(J1, P2) + game.getSeedsAt(J1, P3) + game.getSeedsAt(J1, P4) + game.getSeedsAt(J1, P5) + game.getSeedsAt(J1, P6) + game.getSeedsAt(J2, P1) + game.getSeedsAt(J2, P2) + game.getSeedsAt(J2, P3) + game.getSeedsAt(J2, P4) + game.getSeedsAt(J2, P5) + game.getSeedsAt(J2, P6);
-
-  // GameState game2 = other.get_game_state();
-  // int sumab = game2.getSeedsAt(J1, P1) + game2.getSeedsAt(J1, P2) + game2.getSeedsAt(J1, P3) + game2.getSeedsAt(J1, P4) + game2.getSeedsAt(J1, P5) + game2.getSeedsAt(J1, P6) + game2.getSeedsAt(J2, P1) + game2.getSeedsAt(J2, P2) + game2.getSeedsAt(J2, P3) + game2.getSeedsAt(J2, P4) + game2.getSeedsAt(J2, P5) + game2.getSeedsAt(J2, P6);
-
-  //if (sumaa < sumab) return true;
-
-
-  return false;
 
 }
 
@@ -65,21 +71,21 @@ bound GameNode::get_heuristic_value()
 
     switch (this->heuristic_to_use) {
 
-    case 2:
-      return game.getScore(J2) - game.getScore(J1);
-      break;
+        case 2:
+            return game.getScore(J2) - game.getScore(J1);
+            break;
 
-    case 3:
-      return 500/(49-game.getScore(J1)) - 500/(49-game.getScore(J2));
-      break;
+        case 3:
+            return 500 / (49 - game.getScore(J1)) - 500 / (49 - game.getScore(J2));
+            break;
 
-    case 4:
-      return 1000/(49-game.getScore(J2)) - 1000/(49-game.getScore(J1));
-      break;
+        case 4:
+            return 1000 / (49 - game.getScore(J2)) - 1000 / (49 - game.getScore(J1));
+            break;
 
-    default:
-      return game.getScore(J1) - game.getScore(J2);
-      break;
+        default:
+            return game.getScore(J1) - game.getScore(J2);
+            break;
 
     }
 
@@ -211,9 +217,10 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
         bound alpha, bound beta, transposition_table& table)
 {
 
-  auto value_in_hash = table.find(root);
+    auto value_in_hash = table.find(root);
 
-    if (value_in_hash != table.end() && value_in_hash->second.d >= depth) { // Transposition table lookup
+    if (value_in_hash != table.end()
+            && value_in_hash->second.d >= depth) { // Transposition table lookup
 
         auto bound_in_hash = value_in_hash->second;
 
@@ -240,6 +247,7 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
         root.get_children(children);
 
         GameNode bestchild = *(children.begin());
+
         if (root.is_max_node()) {
 
             ret._bound = INT_MIN;
@@ -254,7 +262,8 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
                 bound_and_action<node> possible_ret = alpha_beta_with_memory(child, depth - 1,
                                                       a, beta, table);
 
-                if (possible_ret._bound > ret._bound || (possible_ret._bound == ret._bound && child.is_better_than(bestchild)) ) {
+                if (possible_ret._bound > ret._bound || (possible_ret._bound == ret._bound
+                        && child.is_better_than(bestchild)) ) {
                     ret._bound = possible_ret._bound;
                     ret._action = child.get_action();
                     bestchild = child;
@@ -279,7 +288,8 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
                 bound_and_action <node> possible_ret = alpha_beta_with_memory(child, depth - 1,
                                                        alpha, b, table);
 
-                if (possible_ret._bound < ret._bound || (possible_ret._bound == ret._bound && child.is_better_than(bestchild))) {
+                if (possible_ret._bound < ret._bound || (possible_ret._bound == ret._bound
+                        && child.is_better_than(bestchild))) {
                     ret._bound = possible_ret._bound;
                     ret._action = child.get_action();
                 }
@@ -296,12 +306,12 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     bounds_and_depth& ref = table[root];
 
     if (ret._bound <= alpha) {
-      ref.upper = ret._bound;
+        ref.upper = ret._bound;
     }
 
     // Found an accurate minimax value - this will not ocurr if called with zero window.
     if (ret._bound > alpha && ret._bound < beta) {
-        ref.upper = ref.lower=  ret._bound;
+        ref.upper = ref.lower =  ret._bound;
     }
 
     // Fail high result implies a lower bound.
@@ -347,8 +357,8 @@ bound_and_action <node> MTDF (node& root, bound first, depth d)
         //root = GameNode(root.get_game_state(), ret._action, true, true);
 
         ret._bound < beta
-               ? upper = ret._bound
-               : lower = ret._bound;
+        ? upper = ret._bound
+                  : lower = ret._bound;
 
     } while (lower < upper);
 
@@ -391,7 +401,7 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
     long timeout = this->getTimeOut();
 
     bool im_first_player = current_player == J1;
-    static bound firstguess = 8;
+    static bound firstguess = 7;
     static depth d = im_first_player
                      ? 15
                      : 14;
@@ -403,9 +413,11 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
 
     static int cont = 0;
     cont++;
-    cerr << cont << endl;
-    if (cont == 1 && im_first_player)
-      return (Move) 1;
+
+    // if (cont == 1 ) {
+    //   if(im_first_player)
+    //     return (Move) 1;
+    // }
 
     // if(im_first_player)
     //   GameNode::heuristic_to_use = 3;
@@ -425,18 +437,27 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
     chrono::high_resolution_clock::time_point end =
         chrono::high_resolution_clock::now();
 
-    chrono::duration<double> time_span = chrono::duration_cast <chrono::duration<double>> (end - begin);
+    chrono::duration<double> time_span = chrono::duration_cast
+                                         <chrono::duration<double>> (end - begin);
 
 
 
     // Iterative Deeping
-
-    for (depth it = 1; time_span.count() < 1 && it < 50; it++){
-      //cerr << "Profundidad: "<< it << " con tiempo: " << time_span.count() << endl;
-      b_and_m = MTDF (node, firstguess, it);
-      end = chrono::high_resolution_clock::now();
-      time_span = chrono::duration_cast <chrono::duration<double>> (end - begin);
-      //cerr << b_and_m._action << " " << time_span.count() << endl;
+    int loopcont = 1;
+    for (depth it = 1; time_span.count() < 1 && it < 50; it++) {
+      bound aux = b_and_m._action;
+        b_and_m = MTDF (node, firstguess, it);
+        if (aux == b_and_m._action){
+          if(loopcont == 5) break;
+          loopcont++;
+        }
+        else
+          loopcont = 1;
+        end = chrono::high_resolution_clock::now();
+        time_span = chrono::duration_cast <chrono::duration<double>> (end - begin);
+        //cerr << b_and_m._action << " " << time_span.count() << endl;
+        cerr << "Profundidad: "<< it << " con tiempo: " << time_span.count() << " Bound: " << b_and_m._bound << " " << b_and_m._action << endl;
+        cerr << loopcont << endl;
     }
 
     // FirstGuess
@@ -447,7 +468,7 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
     //    cerr << b_and_m._bound << " " << b_and_m._action << endl;
     // }
 
-    //b_and_m = MTDF (node, firstguess, d);
+    //b_and_m = MTDF (node, firstguess, 10);
 
     end = chrono::high_resolution_clock::now();
     time_span = chrono::duration_cast<chrono::duration<double>>( end - begin);

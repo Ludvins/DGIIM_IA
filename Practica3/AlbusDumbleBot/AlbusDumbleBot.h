@@ -31,19 +31,19 @@ class GameNode
     Move reach_this_node;
     bool is_a_max_node;
     bool is_a_root_node;
-    string hash_aux;
 
   public:
     using action = Move;
     static int heuristic_to_use;
 
-    GameNode (GameState gs, Move _reach_this_node, bool _maximize, bool _is_root_node = false);
+    GameNode (GameState gs, Move _reach_this_node, bool _maximize,
+              bool _is_root_node = false);
     bound get_heuristic_value();
     action get_action();
     bool is_terminal();
-  bool is_root_node();
+    bool is_root_node();
     bool is_max_node();
-  bool is_better_than(GameNode& other);
+    bool is_better_than(GameNode& other);
     GameState& get_game_state() ;
     const GameState& get_game_state_const() const;
 
