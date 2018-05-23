@@ -73,10 +73,16 @@ class hash_game
 };
 
 struct hash_struct {
-    bound _lower = INT_MIN;
-    bound _upper = INT_MAX;
-    depth _depth = INT_MAX;
+
+  enum upper_or_lower {
+    UPPER,
+    LOWER,
+    NONE,
+  };
+    bound _bound = INT_MIN;
+    depth _depth = INT_MIN;
     GameNode::action _action;
+    upper_or_lower type = NONE;
 };
 
 class AlbusDumbleBot: Bot
@@ -91,5 +97,7 @@ class AlbusDumbleBot: Bot
     string getName();
     Move nextMove(const vector<Move>& adversary, const GameState& state);
 };
+
+
 
 #endif /* ALBUSDUMBLEBOT_H_ */
