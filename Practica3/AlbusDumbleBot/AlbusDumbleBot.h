@@ -31,6 +31,7 @@ class GameNode
     Move reach_this_node;
     bool is_a_max_node;
     bool is_a_root_node;
+    bound heuristic_value = 0;
 
   public:
     using action = Move;
@@ -43,6 +44,10 @@ class GameNode
     bool is_terminal();
     bool is_root_node();
     bool is_max_node();
+    int get_stones()
+    {
+        return 48 - game.getScore(J1) - game.getScore(J2);
+    }
     bool is_better_than(GameNode& other);
     GameState& get_game_state() ;
     const GameState& get_game_state_const() const;
@@ -74,11 +79,11 @@ class hash_game
 
 struct hash_struct {
 
-  enum upper_or_lower {
-    UPPER,
-    LOWER,
-    NONE,
-  };
+    enum upper_or_lower {
+        UPPER,
+        LOWER,
+        NONE,
+    };
     bound _bound = INT_MIN;
     depth _depth = INT_MIN;
     GameNode::action _action;
