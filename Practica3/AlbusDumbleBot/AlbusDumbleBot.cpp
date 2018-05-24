@@ -285,10 +285,8 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     static chrono::high_resolution_clock::time_point begin;
 
     if (restart) {
-        //cerr << "Resetear reloj " << depth << endl;
         begin =  chrono::high_resolution_clock::now();
         restart = false;
-
     }
 
     chrono::high_resolution_clock::time_point end =
@@ -297,10 +295,9 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     chrono::duration<double> time_span = chrono::duration_cast
                                          <chrono::duration<double>> (end - begin);
 
-    if (time_span.count() > 1.9) {
-        //cerr << "Tiempo: " << time_span.count() << endl;
+    if (time_span.count() > 1.95) {
         restart = true;
-        return {  1000, root.get_action() };
+        return { 1000, root.get_action() };
     }
 
     auto value_in_hash = table.find(root);
@@ -310,10 +307,9 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
 
         auto bound_in_hash = value_in_hash->second;
 
-        if ( (bound_in_hash.type == hash_struct::UPPER
-                && bound_in_hash._bound <= alpha )
+        if ( (bound_in_hash.type == hash_struct::UPPER && bound_in_hash._bound <= alpha )
                 ||
-                (bound_in_hash.type == hash_struct::LOWER && bound_in_hash._bound >= beta) )
+             (bound_in_hash.type == hash_struct::LOWER && bound_in_hash._bound >= beta) )
             return {
             bound_in_hash._bound,
             bound_in_hash._action
@@ -335,8 +331,8 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
         int num_stones = root.get_stones();
         int rate = root.get_heuristic_value();
 
-        if (rate - num_stones + 1  > beta) {
-            return {(bound) rate - num_stones + 1, root.get_action()};
+        if (rate - num_stones + 2  > beta) {
+            return {(bound) rate - num_stones + 2, root.get_action()};
         }
 
         if (rate + num_stones < alpha) {
@@ -345,6 +341,17 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
 
         list<node> children;
         root.get_children(children);
+
+        if (value_in_hash != table.end()){
+          for (auto it = children.begin(); it != children.end(); it++){
+            if (it->get_action() == value_in_hash->second._action){
+              auto itaux = it;
+              it++;
+              auto aux = children.begin();
+              swap (aux, itaux);
+            }
+          }
+        }
 
         if (root.is_max_node()) {
 
@@ -358,7 +365,6 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
                                                       a, beta, table);
 
                 if (possible_ret._bound == 1000) {
-                    //cerr << "Codigo de error en profundidad " << depth  << endl;
                     return {1000, root.get_action()};
                 }
 
@@ -388,7 +394,6 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
                                                        alpha, b, table);
 
                 if (possible_ret._bound == 1000) {
-                    //cerr << "Codigo de error en profundidad " << depth << endl;
                     return {1000, root.get_action()};
                 }
 
@@ -461,7 +466,6 @@ bound_and_action <node> MTDF (node& root, bound first, depth d)
         ret = alpha_beta_with_memory (root, d, beta - 1, beta, transposition_table);
 
         if (ret._bound == 1000) {
-            //cerr << "Codigo de error en mtdf " <<endl;
             return {1000, ret._action};
         }
 
@@ -535,7 +539,7 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
 
     // Iterative Deeping
 
-    for (depth it = 3; it < 50; it+=2) {
+    for (depth it = 2; it < 50; it++) {
 
         aux = MTDF (node, firstguess, it);
 
@@ -546,9 +550,9 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
 
         end = chrono::high_resolution_clock::now();
         time_span = chrono::duration_cast <chrono::duration<double>> (end - begin);
-        cerr << "[Iterative Deeping]: Depth: " << it << "\nAcumulative time: " <<
-             time_span.count() <<
-             "\nBound: " << aux._bound << "\nAction: " << aux._action << endl;
+        // cerr << "[Iterative Deeping]: Depth: " << it << "\nAcumulative time: " <<
+        //      time_span.count() <<
+        //      "\nBound: " << aux._bound << "\nAction: " << aux._action << endl;
 
         firstguess = aux._bound;
 
