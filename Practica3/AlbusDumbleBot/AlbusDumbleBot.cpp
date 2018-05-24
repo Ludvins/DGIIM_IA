@@ -307,6 +307,15 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
 
         auto bound_in_hash = value_in_hash->second;
 
+        /*
+        if (bound_in_hash.type == hash_struct::LOWER && bound_in_hash._bound > alpha)
+          alpha = bound_in_hash._bound;
+        else if (bound_in_hash.type == hash_struct::UPPER && bound_in_hash._bound < beta)
+          beta = bound_in_hash._bound;
+        if (alpha >= beta)
+          return {bound_in_hash._bound, root.get_action()};
+        */
+        
         if ( (bound_in_hash.type == hash_struct::UPPER && bound_in_hash._bound <= alpha )
                 ||
              (bound_in_hash.type == hash_struct::LOWER && bound_in_hash._bound >= beta) )
@@ -324,7 +333,9 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
 
     if ( depth == 0 || root.is_terminal() ) { // Leaf Node
 
-        return { root.get_heuristic_value(), root.get_action() };
+      //ret._bound = root.get_heuristic_value();
+      //ret._action == root.get_action();
+      return { root.get_heuristic_value(), root.get_action() };
 
     } else {
 
@@ -449,7 +460,10 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
 template <class node>
 bound_and_action <node> MTDF (node& root, bound first, depth d)
 {
+
     std::unordered_map <node, hash_struct, hash_game> transposition_table;
+    if (d == 1)
+      transposition_table.clear();
     bound_and_action <node> ret;
     ret._bound = first;
 
