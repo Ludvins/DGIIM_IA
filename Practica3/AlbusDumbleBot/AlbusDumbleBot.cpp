@@ -11,34 +11,112 @@ using namespace std;
 
 
 
+chrono::high_resolution_clock::time_point t1;
+template <class node>
+bound_and_action<node> alpha_beta(node& root, depth depth,
+        bound alpha, bound beta)
+{
+    chrono::high_resolution_clock::time_point end =
+        chrono::high_resolution_clock::now();
+
+    chrono::duration<double> time_span = chrono::duration_cast
+                                         <chrono::duration<double>> (end - t1);
+
+    if (time_span.count() > 1.90) {
+        return { 1000, root.get_action() };
+    }
+
+    bound_and_action<node> ret;
+
+    if ( depth == 0 || root.is_terminal() ) { // Leaf Node
+
+        return { root.get_heuristic_value(), root.get_action() };
+
+    } else {
+
+      array <node, 6> children = {root, root, root, root, root, root};
+      root.get_children(children);
+
+        if (root.is_max_node()) {
+
+            ret._bound = INT_MIN;
+
+            for (auto child = children.begin(); child != children.end(); ++child) {
+
+                bound_and_action<node> possible_ret = alpha_beta(*child, depth - 1,
+                                                      alpha, beta);
+
+                if (possible_ret._bound == 1000) {
+                    return {1000, root.get_action()};
+                }
+
+                if (possible_ret._bound > ret._bound ) {
+                    ret._bound = possible_ret._bound;
+                    ret._action = child->get_action();
+                }
+
+                if (alpha < ret._bound) {
+                    alpha = ret._bound;
+                }
+
+                if ( beta <= alpha ) {
+                    break;    // beta cut-off
+                }
+
+            }
+
+        } else { // if root is a min node.
+
+            ret._bound = INT_MAX;
+
+            for (auto child = children.begin(); child != children.end(); ++child) {
+
+
+                bound_and_action <node> possible_ret = alpha_beta(*child, depth - 1,
+                                                       alpha, beta);
+
+                if (possible_ret._bound == 1000) {
+                    return {1000, root.get_action()};
+                }
+
+                if (possible_ret._bound < ret._bound) {
+                    ret._bound = possible_ret._bound;
+                    ret._action = child->get_action();
+                }
+
+                if ( beta > ret._bound) {
+                    beta = ret._bound;
+                }
+
+                if ( beta <= alpha ) {
+                    break;    // alpha cut-off
+                }
+
+            }
+
+        }
+    }
+
+
+    return ret;
+}
+
+
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Node Class implementation ---------------------------------
 // --------------------------------------------------------------------------------------------------------
 
 // This class is needed for MTD-f and AlphaBeta with memory algorithms.
 
-GameNode::GameNode(GameState gs, Move _reach_this_node, bool _maximize,
-                   bool _is_root_node )
-{
-    game = gs;
-    reach_this_node = _reach_this_node;
-    is_a_max_node = _maximize;
-    is_a_root_node = _is_root_node;
-}
 
 GameNode::action GameNode::get_action()
 {
     return reach_this_node;
 }
 
-bool GameNode::is_terminal()
+inline bool GameNode::is_terminal()
 {
     return game.isFinalState();
-}
-
-bool GameNode::is_root_node()
-{
-    return is_a_root_node;
 }
 
 bool GameNode::is_better_than(GameNode& other)
@@ -58,11 +136,48 @@ bool GameNode::is_better_than(GameNode& other)
 
 int  GameNode::heuristic_to_use = 1; // Default heuristic
 
-bound GameNode::get_heuristic_value()
+inline bound GameNode::get_heuristic_value()
 {
+  Player max_player, min_player;
+  if (heuristic_to_use == 1){
+    max_player = J1;
+    min_player = J2;
+  }
+  else {
+    max_player = J2;
+    min_player = J1;
+  }
+
+  array<int,6> pits;
+
+  pits[0] = game.getSeedsAt(max_player, P1);
+  pits[1] = game.getSeedsAt(max_player, P2);
+  pits[2] = game.getSeedsAt(max_player, P3);
+  pits[3] = game.getSeedsAt(max_player, P4);
+  pits[4] = game.getSeedsAt(max_player, P5);
+  pits[5] = game.getSeedsAt(max_player, P6);
+
+  int h1 = pits[0];
+
+  int h2 = 0;
+  for(auto it : pits)
+    h2 += it;
+
+  int h3 = 0;
+  for(auto it : pits)
+    if (it != 0) h3++;
+
+  int h4 = game.getScore(max_player);
+
+  int h5 = pits[5] == 0 ? 1 : 0;
+
+  int h6 = game.getScore(min_player);
+
+  return 0.198649*h1 + 0.190084*h2 + 0.370793*h3 + h4 + 0.418841*h5 - 0.565937*h6;
+
 
     if (this->heuristic_to_use == 1) {
-        return game.getScore(J1) - game.getScore(J2);
+      return game.getScore(J1) - game.getScore(J2);
     }
 
     else {
@@ -70,17 +185,17 @@ bound GameNode::get_heuristic_value()
     }
 }
 
-GameState& GameNode::get_game_state()
+inline GameState& GameNode::get_game_state()
 {
     return game;
 }
 
-const GameState& GameNode::get_game_state_const() const
+inline const GameState& GameNode::get_game_state_const() const
 {
     return game;
 }
 
-bool GameNode::is_max_node()
+inline bool GameNode::is_max_node()
 {
     return is_a_max_node;
 }
@@ -107,105 +222,54 @@ bool GameNode::operator== (const GameNode& lhsn) const
         rhs.getCurrentPlayer() == lhs.getCurrentPlayer();
 }
 
-void GameNode::get_children(list<GameNode>& children)
+bool GameNode::operator< (GameNode& lhsn)
 {
+    return get_heuristic_value() < lhsn.get_heuristic_value();
+}
+
+void GameNode::get_children(array<GameNode, 6>& children)
+{
+
     GameState gs = game.simulateMove ( (Move) 1);
     bool child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
                           is_a_max_node : !is_a_max_node;
-    GameNode child = GameNode (gs, (Move) 1,  child_maximize);
-    children.push_back(child);
+    GameNode child (gs, (Move) 1,  child_maximize);
+    children[0] = child;
 
-    for (int i = 2 ; i <= 6; i++) {
-        GameState gs = game.simulateMove ( (Move) i);
-        bool child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
-                              is_a_max_node : !is_a_max_node;
-        GameNode child = GameNode (gs, (Move) i,  child_maximize);
+    gs = game.simulateMove ( (Move) 2);
+    child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
+                     is_a_max_node : !is_a_max_node;
+    child = GameNode (gs, (Move) 2,  child_maximize);
+    children[1] = child;
 
-        bool a = false;
+    gs = game.simulateMove ( (Move) 3);
+    child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
+                     is_a_max_node : !is_a_max_node;
+    child = GameNode (gs, (Move) 3,  child_maximize);
+    children[2] = child;
 
-        if (is_a_max_node) {
+    gs = game.simulateMove ( (Move) 4);
+    child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
+                     is_a_max_node : !is_a_max_node;
+    child = GameNode (gs, (Move) 4,  child_maximize);
+    children[3] = child;
 
-            for (auto it = children.begin(); it != children.end(); it++) {
+    gs = game.simulateMove ( (Move) 5);
+    child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
+                     is_a_max_node : !is_a_max_node;
+    child = GameNode (gs, (Move) 5,  child_maximize);
+    children[4] = child;
 
-                if (it->get_heuristic_value() < child.get_heuristic_value()) {
-                    children.insert(it, child);
-                    a = true;
-                    break;
-                }
-            }
-
-            if (!a) {
-                children.push_back(child);
-            }
-
-        } else {
-            for (auto it = children.begin(); it != children.end(); it++) {
-
-                if (it->get_heuristic_value() > child.get_heuristic_value()) {
-                    children.insert(it, child);
-                    a = true;
-                    break;
-                }
-            }
-
-            if (!a) {
-                children.push_back(child);
-            }
-        }
-
-    }
-
-    /*
-      gs = game.simulateMove ( (Move) 2);
-      child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
-        is_a_max_node : !is_a_max_node;
-      child = GameNode (gs, (Move) 2,  child_maximize);
-
-        bool a = false;
-      if (this->heuristic_to_use == 1){
-
-        for (auto it = children.begin(); it != children.end(); it++){
-
-          if (it->get_heuristic_value() < child.get_heuristic_value()){
-            children.insert(it, child);
-            a = true;
-            break;
-          }
-        }
-        if (!a)
-          children.push_back(child);
-          }
-      children.push_back(child);
-
-      gs = game.simulateMove ( (Move) 3);
-      child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
-        is_a_max_node : !is_a_max_node;
-      child = GameNode (gs, (Move) 3,  child_maximize);
-      children.push_back( child );
-
-      gs = game.simulateMove ( (Move) 4);
-      child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
-        is_a_max_node : !is_a_max_node;
-      child = GameNode (gs, (Move) 4,  child_maximize);
-      children.push_back( child );
-
-      gs = game.simulateMove ( (Move) 5);
-      child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
-        is_a_max_node : !is_a_max_node;
-      child = GameNode (gs, (Move) 5,  child_maximize);
-      children.push_back( child );
-
-      gs = game.simulateMove ( (Move) 6);
-      child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
-        is_a_max_node : !is_a_max_node;
-      child = GameNode (gs, (Move) 6,  child_maximize);
-      children.push_back( child );
-
-
-    */
-
+    gs = game.simulateMove ( (Move) 6);
+    child_maximize = gs.getCurrentPlayer() == game.getCurrentPlayer() ?
+                     is_a_max_node : !is_a_max_node;
+    child = GameNode (gs, (Move) 6,  child_maximize);
+    children[5] = child;
 
 }
+
+
+
 
 ostream& operator<< (ostream& os, GameNode gn)
 {
@@ -275,93 +339,62 @@ size_t hash_game::operator() (const GameNode& node) const
 // So the key of the table is a game state and the return value must be a pair of lower and upper bounds.
 //
 
-
-
+//chrono::high_resolution_clock::time_point t1;
 template <class node, class transposition_table>
 bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
         bound alpha, bound beta, transposition_table& table)
 {
-    static bool restart = true;
-    static chrono::high_resolution_clock::time_point begin;
-
-    if (restart) {
-        begin =  chrono::high_resolution_clock::now();
-        restart = false;
-    }
-
     chrono::high_resolution_clock::time_point end =
         chrono::high_resolution_clock::now();
 
     chrono::duration<double> time_span = chrono::duration_cast
-                                         <chrono::duration<double>> (end - begin);
+                                         <chrono::duration<double>> (end - t1);
 
-    if (time_span.count() > 1.95) {
-        restart = true;
+    if (time_span.count() > 1.90) { // Time-out 
         return { 1000, root.get_action() };
     }
 
     auto value_in_hash = table.find(root);
 
     if (value_in_hash != table.end()
-            && value_in_hash->second._depth >= depth) { // Transposition table lookup
+            && value_in_hash->second._depth > depth) { // Transposition table lookup
 
-        auto bound_in_hash = value_in_hash->second;
+        if ( value_in_hash->second.lower_bound >= beta )
+            return { value_in_hash->second.lower_bound, value_in_hash->second._action };
 
-        /*
-        if (bound_in_hash.type == hash_struct::LOWER && bound_in_hash._bound > alpha)
-          alpha = bound_in_hash._bound;
-        else if (bound_in_hash.type == hash_struct::UPPER && bound_in_hash._bound < beta)
-          beta = bound_in_hash._bound;
-        if (alpha >= beta)
-          return {bound_in_hash._bound, root.get_action()};
-        */
-        
-        if ( (bound_in_hash.type == hash_struct::UPPER && bound_in_hash._bound <= alpha )
-                ||
-             (bound_in_hash.type == hash_struct::LOWER && bound_in_hash._bound >= beta) )
-            return {
-            bound_in_hash._bound,
-            bound_in_hash._action
-        };
+        if ( value_in_hash->second.upper_bound <= alpha )
+            return { value_in_hash->second.upper_bound, value_in_hash->second._action };
 
-        alpha = std::max(alpha, bound_in_hash._bound);
+         if (value_in_hash->second.lower_bound > alpha)
+           alpha = value_in_hash->second.lower_bound;
 
-        beta = std::min(beta, bound_in_hash._bound);
+         if (value_in_hash->second.upper_bound < beta)
+           beta = value_in_hash->second.upper_bound;
+
+        //alpha := max(alpha, n.lowerbound);
+
+        //beta := min(beta, n.upperbound);
     }
 
     bound_and_action<node> ret;
 
     if ( depth == 0 || root.is_terminal() ) { // Leaf Node
 
-      //ret._bound = root.get_heuristic_value();
-      //ret._action == root.get_action();
-      return { root.get_heuristic_value(), root.get_action() };
+        return { root.get_heuristic_value(), root.get_action() };
 
     } else {
 
-        int num_stones = root.get_stones();
-        int rate = root.get_heuristic_value();
+      array <node, 6> children = {root, root, root, root, root, root};
+      root.get_children(children);
 
-        if (rate - num_stones + 2  > beta) {
-            return {(bound) rate - num_stones + 2, root.get_action()};
-        }
+        if (value_in_hash != table.end()) {
+          for (auto it = children.begin(); it != children.end(); ++it) {
+                if (it->get_action() == value_in_hash->second._action) {
+                  iter_swap(children.begin(), it);
+                    break;
 
-        if (rate + num_stones < alpha) {
-            return {(bound) rate + num_stones, root.get_action()};
-        }
-
-        list<node> children;
-        root.get_children(children);
-
-        if (value_in_hash != table.end()){
-          for (auto it = children.begin(); it != children.end(); it++){
-            if (it->get_action() == value_in_hash->second._action){
-              auto itaux = it;
-              it++;
-              auto aux = children.begin();
-              swap (aux, itaux);
-            }
-          }
+                }
+           }
         }
 
         if (root.is_max_node()) {
@@ -369,22 +402,23 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
             ret._bound = INT_MIN;
             bound a = alpha; //Save original alpha
 
-            for (auto child : children) {
+            for (auto child = children.begin(); child != children.end(); ++child) {
 
-
-                bound_and_action<node> possible_ret = alpha_beta_with_memory(child, depth - 1,
+                bound_and_action<node> possible_ret = alpha_beta_with_memory(*child, depth - 1,
                                                       a, beta, table);
 
-                if (possible_ret._bound == 1000) {
+                if (possible_ret._bound == 1000) { //error code, timeout
                     return {1000, root.get_action()};
                 }
 
                 if (possible_ret._bound > ret._bound ) {
                     ret._bound = possible_ret._bound;
-                    ret._action = child.get_action();
+                    ret._action = child->get_action();
                 }
 
-                a = std::max(a, ret._bound);
+                if (a < ret._bound) {
+                    a = ret._bound;
+                }
 
                 if ( beta <= ret._bound ) {
                     break;    // beta cut-off
@@ -398,30 +432,34 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
             bound b = beta; //Save original beta
 
 
-            for (auto child : children) {
+            for (auto child = children.begin(); child != children.end(); ++child) {
 
 
-                bound_and_action <node> possible_ret = alpha_beta_with_memory(child, depth - 1,
+                bound_and_action <node> possible_ret = alpha_beta_with_memory(*child, depth - 1,
                                                        alpha, b, table);
 
-                if (possible_ret._bound == 1000) {
+                if (possible_ret._bound == 1000) { //error-code, time-out
                     return {1000, root.get_action()};
                 }
 
                 if (possible_ret._bound < ret._bound) {
                     ret._bound = possible_ret._bound;
-                    ret._action = child.get_action();
+                    ret._action = child->get_action();
                 }
 
-                b = std::min(b, ret._bound);
+                if ( b > ret._bound) {
+                    b = ret._bound;
+                }
 
                 if ( ret._bound <= alpha ) {
                     break;    // alpha cut-off
                 }
 
             }
+
         }
     }
+
 
     //
     //  ----- Transposition table storing of bounds.
@@ -431,14 +469,13 @@ bound_and_action<node> alpha_beta_with_memory(node& root, depth depth,
     if (hash_value._depth < depth) {
         // Fail low result implies an upper bound.
         if (ret._bound <= alpha) {
-            hash_value._bound = ret._bound;
-            hash_value.type = hash_struct::UPPER;
+            hash_value.upper_bound = ret._bound;
         }
 
+        // Found an accurate minimax value - will not occur if called with zero window.
         // Fail high result implies a lower bound.
         if (ret._bound >= beta ) {
-            hash_value._bound = ret._bound;
-            hash_value.type = hash_struct::LOWER;
+            hash_value.lower_bound = ret._bound;
         }
 
         hash_value._depth = depth;
@@ -461,36 +498,41 @@ template <class node>
 bound_and_action <node> MTDF (node& root, bound first, depth d)
 {
 
-    std::unordered_map <node, hash_struct, hash_game> transposition_table;
-    if (d == 1)
-      transposition_table.clear();
+    static std::unordered_map <node, hash_struct, hash_game> transposition_table;
+
+    if (d == 1) {
+        transposition_table.clear();
+    }
+
     bound_and_action <node> ret;
     ret._bound = first;
 
     bound upper = INT_MAX;
     bound lower = INT_MIN;
     bound beta;
-    int i = 0;
-
+    //int cont = 0;
     do {
-        i++;
-        beta = (ret._bound == lower)
-               ? ret._bound + 1
-               : ret._bound;
+      //cont ++;
+      if (ret._bound == lower) {
+            beta = ret._bound + 1;
+        } else {
+            beta = ret._bound;
+        }
+
         ret = alpha_beta_with_memory (root, d, beta - 1, beta, transposition_table);
 
-        if (ret._bound == 1000) {
+        if (ret._bound == 1000) { // error-code, time-out.
             return {1000, ret._action};
         }
 
-        transposition_table.erase(root);
-
-        ret._bound < beta
-        ? upper = ret._bound
-                  : lower = ret._bound;
+        if (ret._bound < beta) {
+            upper = ret._bound;
+        } else {
+            lower = ret._bound;
+        }
 
     } while (lower < upper);
-
+    //cerr << cont << endl;
     return ret;
 
 }
@@ -525,63 +567,45 @@ Move AlbusDumbleBot::nextMove(const vector<Move>& adversary,
                               const GameState& state)
 {
 
+    t1 = chrono::high_resolution_clock::now();
     Player current_player = this->getPlayer();
     long timeout = this->getTimeOut();
-
     bool im_first_player = current_player == J1;
-    bound firstguess = 0;
+    bound firstguess = 8;
+
+    static int cont = 0;
+    cont ++;
+    if (cont == 1 && im_first_player)
+      return (Move) 4;
+    else if (cont == 2 && im_first_player)
+      return  (Move) 1;
+    else if(cont == 1 && !im_first_player)
+      return (Move) 2;
 
     if (!im_first_player) {
         GameNode::heuristic_to_use = 2 ;
     }
 
-    chrono::high_resolution_clock::time_point begin =
-        chrono::high_resolution_clock::now();
+    GameNode node (state, M_NONE, true);
 
-    Move next_move = M_NONE;
-
-    GameNode node (state, M_NONE, true, true);
-
-    chrono::high_resolution_clock::time_point end =
-        chrono::high_resolution_clock::now();
-
-    chrono::duration<double> time_span = chrono::duration_cast
-                                         <chrono::duration<double>> (end - begin);
-
-    bound_and_action <GameNode> b_and_m = MTDF(node, firstguess, 1);
-    bound_and_action <GameNode> aux;
+    bound_and_action <GameNode> b_and_m;
+    bound_and_action <GameNode> aux = {0, (Move) 0};
 
     // Iterative Deeping
 
-    for (depth it = 2; it < 50; it++) {
+    for (depth it = 1; it < 20 && aux._bound != 1000; it++) {
 
+        b_and_m = aux;
         aux = MTDF (node, firstguess, it);
+        //aux = alpha_beta(node, it, INT_MIN, INT_MAX);
 
-        if (aux._bound == 1000) {
-            //cerr << "Codigo de error en main" << endl;
-            break;
-        }
-
-        end = chrono::high_resolution_clock::now();
-        time_span = chrono::duration_cast <chrono::duration<double>> (end - begin);
-        // cerr << "[Iterative Deeping]: Depth: " << it << "\nAcumulative time: " <<
-        //      time_span.count() <<
-        //      "\nBound: " << aux._bound << "\nAction: " << aux._action << endl;
+        // cerr << "[Iterative Deeping]: Depth: " << it <<  "\nBound: " << aux._bound <<
+        //     "\nAction: " << aux._action << endl;
 
         firstguess = aux._bound;
 
-        b_and_m = aux;
+
     }
 
-
-    //b_and_m = MTDF (node, firstguess, 13);
-
-    end = chrono::high_resolution_clock::now();
-    time_span = chrono::duration_cast<chrono::duration<double>>( end - begin);
-
-    cerr << "Total time spent on the move: " << time_span.count() << endl;
-
-    next_move = b_and_m._action;
-
-    return next_move;
+    return b_and_m._action;
 }
