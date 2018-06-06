@@ -1,0 +1,55 @@
+#+TITLE:     Práctica 4 - Kalah (6,4)
+#+AUTHOR:    Luis Antonio Ortega Andrés
+#+EMAIL:     ludvins@correo.ugr.es
+#+OPTIONS: toc:nil
+Durante el desarrollo de la práctica se ha utilizado: un algoritmo de búsqueda minimax, MTD-f y una heurística para evaluar cómo de bueno es un tablero.  
+
+
+* MTD-f
+
+El nombre de ~MTD-f~ es una abreviación de ~MTD(n,f)~ o /Memory-enhanced Test Driver with node ~n~ and value/ ~f~. Se trata de una alternativa a /alpha-beta prunning/.
+
+Su eficiencia se basa en realizar llamadas con ventana nula a ~alpha-beta~, de forma que se producen más podas pero devuelve menos información (solo el valor minimax). Para encontrar el valor minimax ~MTD-f~ hace varias llamadas a ~alpha-beta~ por lo que se implementa con una /tabla de trasposiciones/, para no tener que volver a explorar partes del árbol que ya hayamos explorado.
+
+Para su correcto funcionamiento ~MTD-f~ requiere de un =firstguess= como aproximación del valor minimax, para así hacer el menor número de llamadas posibles a ~alpha-beta~, para esto utilizamos ~iterative deepening~ en ~nextMove~ utilizando como aproximación el valor minimax de la profundidad anterior.
+
+Podemos encontrar el pseudocódigo del algoritmo aqui. ([[https://people.csail.mit.edu/plaat/mtdf.html][Referencia]]).
+
+El algoritmo va aproximando ~lowerbound~ y ~upperbound~ hacia el valor minimax del árbol, supuesto que el valor del ~firstguess~ fuera exacto, el algoritmo requeriría de 2 llamadas a ~alpha-beta~.
+
+Sobre ~alpha-beta~ con memoria, lo primero que realiza nuestro algoritmo es mirar si ya habíamos explorado el nodo con anterioridad, en caso de que haya ocurrido, la información es utilizada aunque no suponga una poda en el árbol.
+Luego el funcionamiento es el mismo que en ~alpha-beta~ salvo que al final guardamos la información del nodo en nuestra tabla.
+
+** Hash
+
+Para hacer nuestra tabla de transposiciones, es necesario utilizar un hash y un contenedor, para el hash he utilizado el hash de string que se encuentra en la ~STL~ y he transformado un tablero a un string concatenando los enteros que lo componen, y para el contenedor, un ~unordered_map~.
+
+En nuestro ~hash_struct~ guardamos la información que necesitamos sobre el nodo, entre ella los bounds obtenidos y la profundidad a la que lo hemos encontrado. Esto último lo utilizamos para lo siguiente:
+
+En caso de encontrarnos con un nodo que ya hayamos explorado, no siempre es útil la información que tenemos almacenada sobre él, esto es cuando la profundidad a la que nos lo hemos encontrado es mayor que la que tenemos almacenada, ya que los bounds que tenemos almacenados corresponden a la exploración de un subárbol más pequeño, luego nos aporta menos información que la que obtendremos si lo exploramos. Esta parte del algoritmo no la tenemos en el pseudocódigo pero podemos verlo en su implementación.
+
+* Encapsulación juego.
+
+Para la realización del algoritmo se ha encapsulado el tablero del juego en otra estructura que nos permitiera hacer las operaciones de forma mas cómoda:
+
+Para dar un nivel mas de abstracción los algoritmos están hechos sobre una plantilla con acciones, de forma que no se hace referencia a ~Move~ en ningún momento salvo en la clase ~GameNode~, que es la que hace de puente entre el bot y los algoritmos de búsqueda. La idea es que estos dos mismos algoritmos funcionen con cualquier clase nodo que disponga de los métodos necesarios, sin tener que cambiar nada de ellos.
+
+* Heurística
+
+La heuristica utilizada para valorar un tablero es la siguiente:
+
+#+BEGIN_SRC c
+    int h1 = semillas_en_mi_primer_hoyo();
+    int h2 = puntos_en_mis_hoyos();
+    int h3 = numero_de_hoyos_no_vacios()
+    int h4 = puntos_en_mi_granero();
+    int h5 = mi_ultimo_hoyo_esta_vacio();
+    int h6 = puntos_en_su_granero();
+    return 0.198649 * h1 + 0.190084 * h2 + 0.370793 * h3 + h4 + 0.418841 * h5 -
+           0.565937 * h6;
+
+#+END_SRC
+
+Está compuesta por otras 6 heurísticas que evaluan distintos aspectos del tablero, como las fichas en tu campo, los puntos en tu granero, y si las fichas estan más a la izquierda o a la derecha.
+
+La heurística está sacada de la siguiente [[https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwjk5-eVpq3bAhVIWxQKHU_PA9UQFggpMAA&url=https%3A%2F%2Fwww.politesi.polimi.it%2Fbitstream%2F10589%2F134455%2F3%2FThesis.pdf&usg=AOvVaw2V0hHGYk2colb5RQzWn-kB][referencia]].
